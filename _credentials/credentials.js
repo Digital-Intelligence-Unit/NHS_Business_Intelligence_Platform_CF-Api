@@ -5,6 +5,4 @@ module.exports = {
   postgres_pw: process.env.POSTGRES_PW,
   aws_secret_id: process.env.AWS_SECRETID,
   aws_secret_key: process.env.AWS_SECRETKEY,
-  EmailHost: process.env.EMAILHOST,
-  EmailPort: process.env.EMAILPORT,
 };
