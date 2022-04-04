@@ -1,0 +1,74 @@
+{
+  "name": "express-api-template",
+  "main": "server.js",
+  "version": "1.0.0",
+  "engines": {
+    "node": "~10.13",
+    "npm": "~6"
+  },
+  "scripts": {
+    "start": "node server",
+    "start:dev": "set DEV=true && node server",
+    "test": "jest tests --runInBand --detectOpenHandles --forceExit",
+    "test-coverage": "jest tests --coverage --runInBand --detectOpenHandles --forceExit"
+  },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/jest/setEnvVars.js"
+    ],
+    "collectCoverage": true,
+    "coverageReporters": [
+      "html"
+    ],
+    "reporters": [
+      "default",
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "test-report-directory",
+          "outputName": "report-filename.xml"
+        }
+      ]
+    ]
+  },
+  "dependencies": {
+    "activedirectory": "^0.7.2",
+    "aws-sdk": "^2.540.0",
+    "bcryptjs": "~2.4.3",
+    "body-parser": "~1.19.0",
+    "cors": "~2.8.5",
+    "crossfilter": "^1.3.12",
+    "diu-data-functions": "^1.1.1",
+    "express": "~4.17.1",
+    "express-winston": "^4.0.5",
+    "jsonwebtoken": "~8.5.1",
+    "mongoose": "~4.11.14",
+    "morgan": "~1.9.0",
+    "net-ping": "^1.2.3",
+    "nodemailer": "^6.7.3",
+    "passport": "^0.4.0",
+    "passport-activedirectory": "^1.0.4",
+    "passport-jwt": "~4.0.0",
+    "pg": "^8.5.1",
+    "pg-mapper": "0.0.1",
+    "pg-types": "^3.0.1",
+    "qrcode": "^1.4.4",
+    "request": "^2.88.2",
+    "simple-crypto-js": "^3.0.0",
+    "speakeasy": "^2.0.0",
+    "swagger-jsdoc": "^6.0.0",
+    "swagger-ui-express": "^4.1.6",
+    "winston": "^3.3.3",
+    "winston-aws-cloudwatch": "^3.0.0",
+    "winston-mongodb": "^5.0.5"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1.0",
+    "@types/jest": "^26.0.19",
+    "dotenv": "^8.2.0",
+    "jest": "^26.6.3",
+    "jest-junit": "^12.0.0",
+    "nodemon": "^2.0.6",
+    "supertest": "^6.0.1"
+  }
+}

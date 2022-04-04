@@ -1,0 +1,11 @@
+version: "2.1"
+
+services:
+  api-cfserver:
+    image: api-cfserver
+    build: .
+    environment:
+      - AWSREGION=eu-west-2
+      - API_NAME=api-cfserver
+    ports:
+      - 8079:8079
