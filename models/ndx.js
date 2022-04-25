@@ -1,5 +1,7 @@
 // @ts-check
 const cf = require("./crossfilter");
+const configurations = require("../config/cf_configurations").cfConfigurations;
+const tablename = process.env.TABLENAME || "covid_populations";
 
 module.exports.NDX = class NDX {
   constructor() {
@@ -19,67 +21,61 @@ module.exports.NDX = class NDX {
       value.filterAll();
     }
 
-    this.dimensions.numberSelLtc.dispose();
-    this.groups.numberSelLtc.dispose();
-    this.dimensions.numberSelLtc = this.ndx.dimension((d) => d.NoSelectedLtcs);
-    this.groups.numberSelLtc = this.dimensions.numberSelLtc.group();
-    this.filters.numberSelLtc = dataMatches;
+    const config = configurations.find((x) => x.name === tablename) || configurations[0];
 
-    this.dimensions.numberSelFlag.dispose();
-    this.groups.numberSelFlag.dispose();
-    this.dimensions.numberSelFlag = this.ndx.dimension((d) => d.NoSelectedFlags);
-    this.groups.numberSelFlag = this.dimensions.numberSelFlag.group();
-    this.filters.numberSelFlag = dataMatches;
+    const counters = config.dimensions.filter((x) => x.countDim);
+    counters.forEach((dim) => {
+      this.dimensions[dim.name].dispose();
+      this.groups[dim.name].dispose();
+      this.dimensions[dim.name] = this.ndx.dimension((d) => d[dim.tableCol]);
+      this.groups[dim.name] = this.dimensions[dim.name].group();
+      this.filters[dim.name] = dataMatches;
+    });
   }
 
   addCounts(filter) {
-    const people = cf.getDataset();
-    people.forEach((people_d) => {
-      people_d.NoSelectedLtcs = 0;
-      people_d.NoSelectedFlags = 0;
-    });
-    const LTCs = filter["LTCs2Dimension"];
-    const Flags = filter["Flags2Dimension"];
-    var filts = [];
-    if (LTCs && LTCs.length > 0) {
-      LTCs.forEach((x) => filts.push(x[0]));
-      filts.forEach((filt_d) => {
-        people.forEach((people_d) => {
-          if (people_d.ltcs["LTCs"].indexOf(filt_d) >= 0) {
-            people_d.NoSelectedLtcs = people_d.NoSelectedLtcs + 1;
-          }
+    const config = configurations.find((x) => x.name === tablename) || configurations[0];
+    const counters = config.dimensions.filter((x) => x.countDim);
+
+    try {
+      let allFilts = [];
+      counters.forEach((option) => {
+        var filts = [];
+        const arr = filter[option.fieldtoCount];
+        if (arr && arr.length > 0) arr.forEach((x) => filts.push(x[0]));
+        const relatedDim = config.dimensions.find((x) => x.name === option.fieldtoCount);
+        allFilts.push({ filters: filts, dimension: option, relatedDim: relatedDim });
+      });
+
+      const items = cf.getDataset();
+      items.forEach((item) => {
+        allFilts.forEach((filt) => {
+          item[filt.dimension.tableCol] = 0;
+
+          const tableCol = filt.relatedDim.tableCol;
+          const tableColArr = filt.relatedDim.tableColArr;
+
+          filt.filters.forEach((f) => {
+            if (item[tableCol][tableColArr].indexOf(f) >= 0) item[filt.dimension.tableCol] += 1;
+          });
         });
       });
-    }
-    if (Flags && Flags.length > 0) {
-      var flagfilts = [];
-      Flags.forEach((x) => flagfilts.push(x[0]));
-      flagfilts.forEach((filt_d) => {
-        people.forEach((people_d) => {
-          if (people_d.flags["Flags"].indexOf(filt_d) >= 0) {
-            people_d.NoSelectedFlags = people_d.NoSelectedFlags + 1;
-          }
-        });
-      });
+    } catch (error) {
+      console.log("Unable to carry out addCounts: " + error);
     }
 
-    this.dimensions.numberSelLtc.dispose();
-    this.groups.numberSelLtc.dispose();
-    this.dimensions.numberSelLtc = this.ndx.dimension((d) => {
-      return d.NoSelectedLtcs || 0;
+    counters.forEach((dim) => {
+      this.dimensions[dim.name].dispose();
+      this.groups[dim.name].dispose();
+      this.dimensions[dim.name] = this.ndx.dimension((d) => {
+        return d[dim.tableCol] || 0;
+      });
+      this.groups[dim.name] = this.dimensions[dim.name].group();
+      this.filters[dim.name] = dataMatches;
     });
-    this.groups.numberSelLtc = this.dimensions.numberSelLtc.group();
-    this.filters.numberSelLtc = dataMatches;
-    this.dimensions.numberSelFlag.dispose();
-    this.groups.numberSelFlag.dispose();
-    this.dimensions.numberSelFlag = this.ndx.dimension((d) => {
-      return d.NoSelectedFlags || 0;
-    });
-    this.groups.numberSelFlag = this.dimensions.numberSelFlag.group();
-    this.filters.numberSelFlag = dataMatches;
   }
 };
 
-const dataMatches = function (data, filter) {
+const dataMatches = (data, filter) => {
   return filter.includes(data.toString());
 };

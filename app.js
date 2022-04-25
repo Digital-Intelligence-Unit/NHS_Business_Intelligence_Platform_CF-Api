@@ -121,15 +121,15 @@ app.use(bodyParser.json());
 
 // ROUTES FOR OUR API
 // =============================================================================
-const populations = require("./routes/populations");
-app.use("/populations", populations);
+const dataset = require("./routes/dataset");
+app.use("/dataset", dataset);
 
 app.use(passport.initialize());
 app.use(passport.session());
 require("./config/passport")(passport);
 
 app.get("/", (req, res) => {
-  res.send("Invalid endpoint");
+  res.status(200).send("Invalid endpoint");
 });
 
 // BUILD CROSSFILTER OBJECT ON LOAD
