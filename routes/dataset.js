@@ -8,19 +8,19 @@ const CF = require("../models/crossfilter");
 /**
  * @swagger
  * tags:
- *   name: Population
- *   description: Stats for the Population
+ *   name: Dataset
+ *   description: Stats for the Dataset
  */
 
 /**
  * @swagger
- * /populations/getCrossfilter:
+ * /dataset/getCrossfilter:
  *   get:
  *     security:
  *      - JWT: []
  *     description: Queries the Server Side Crossfilter Object
  *     tags:
- *      - Population
+ *      - Dataset
  *     produces:
  *      - application/json
  *     responses:
@@ -33,22 +33,27 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    const filter = req.param("filter") ? JSON.parse(req.param("filter")) : {};
-    NDXfilter(filter, function (cf, err) {
-      res.send(cf);
+    const filter = req.params["filter"] ? JSON.parse(req.params["filter"]) : {};
+    NDXfilter(filter, (cf, err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send(err);
+      } else {
+        res.status(200).send(cf);
+      }
     });
   }
 );
 
 /**
  * @swagger
- * /populations/rebuildCrossfilter:
+ * /dataset/rebuildCrossfilter:
  *   get:
  *     security:
  *      - JWT: []
  *     description: Builds the Server Side Crossfilter Object
  *     tags:
- *      - Population
+ *      - Dataset
  *     produces:
  *      - application/json
  *     responses:
@@ -79,14 +84,14 @@ router.get(
 
 /**
  * @swagger
- * /populations/getComparison:
+ * /dataset/getComparison:
  *   post:
  *     consumes:
  *      - application/json
  *     security:
  *      - JWT: []
  *     tags:
- *      - Population
+ *      - Dataset
  *     parameters:
  *       - name: cohorts
  *         description: Cohort A and Cohort B
@@ -137,9 +142,10 @@ router.post(
       const b = JSON.parse(cohortComparatorFilter.cohorturl);
       CF.compareCF(a, b, function (cf, baseline, comp, err) {
         if (err) {
-          res.send({ err: "Problem calculating comparison: " + err });
+          console.error(err);
+          res.status(500).send({ err: "Problem calculating comparison: " + err });
         } else {
-          res.send({
+          res.status(200).send({
             details: cf,
             baselinePop: baseline,
             comparisonPop: comp,

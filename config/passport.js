@@ -9,7 +9,7 @@ module.exports = function (passport) {
   opts.secretOrKey = credentials.secret;
   passport.use(
     new JwtStrategy(opts, (jwt_payload, done) => {
-      if (jwt_payload.exp < Date.now()) {
+      if (jwt_payload.exp < Date.now() / 1000) {
         return done(null, false);
       }
       return done(null, jwt_payload);

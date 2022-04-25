@@ -1,13 +1,15 @@
 // @ts-check
 
 const data = require("./data");
-const crossfilter = require("crossfilter");
+const crossfilter = require("crossfilter2");
 const ndx = require("./ndx");
 let groups = {};
 let dimensions = {};
 let filters = {};
 let model;
 let dataset;
+const configurations = require("../config/cf_configurations").cfConfigurations;
+const tablename = process.env.TABLENAME || "covid_populations";
 
 module.exports.filterCF = function (filter, callback) {
   callback(getResults(filter), null);
@@ -47,6 +49,12 @@ module.exports.compareCF = function (filterA, filterB, callback) {
 };
 
 module.exports.buildCrossfilter = function (callback) {
+  const config = configurations.filter((x) => x.name === tablename);
+  if (config.length === 0) {
+    console.log("Unable to configure crossfilter for " + tablename);
+    return;
+  }
+  const thisConfig = config[0];
   data.getAll(function (err, result) {
     if (err) {
       console.log("Unable to build CF: " + err.toString());
@@ -57,79 +65,55 @@ module.exports.buildCrossfilter = function (callback) {
       dataset = result;
       console.log("Data extracted from DB");
       result = null;
-      dataset.forEach((people_d) => {
-        people_d.NoSelectedLtcs = 0;
-        people_d.NoSelectedFlags = 0;
-      });
+
+      if (thisConfig.selectedCounts && thisConfig.selectedCounts.length > 0) {
+        dataset.forEach((item) => {
+          thisConfig.selectedCounts.forEach((count) => {
+            item[count] = 0;
+          });
+        });
+      }
+
       console.log("Constructing CF...");
       model = crossfilter(dataset);
       // @ts-ignore
       const all = model.groupAll();
       console.log("Building Dimensions...");
-      dimensions.LDimension = model.dimension((d) => d.l);
-      groups.LDimension = dimensions.LDimension.group();
-      filters.LDimension = dataMatches;
-      dimensions.GPDimension = model.dimension((d) => d.gp);
-      groups.GPDimension = dimensions.GPDimension.group();
-      filters.GPDimension = dataMatches;
-      // @ts-ignore
-      dimensions.LTCsDimension = model.dimension((d) => d.ltcs["LTCs"], true);
-      groups.LTCsDimension = dimensions.LTCsDimension.group();
-      filters.LTCsDimension = filterContains;
-      // @ts-ignore
-      dimensions.LTCs2Dimension = model.dimension((d) => d.ltcs["LTCs"], true);
-      groups.LTCs2Dimension = dimensions.LTCs2Dimension.group();
-      filters.LTCs2Dimension = filterContains;
-      dimensions.SexDimension = model.dimension((d) => (d.sex === "M" ? "Male" : "Female"));
-      groups.SexDimension = dimensions.SexDimension.group();
-      filters.SexDimension = dataMatches;
-      dimensions.MDimension = model.dimension((d) => (d.m === "undefined" ? "U99" : d.m));
-      groups.MDimension = dimensions.MDimension.group();
-      filters.MDimension = dataMatches;
-      dimensions.CCGDimension = model.dimension((d) => d.ccg);
-      groups.CCGDimension = dimensions.CCGDimension.group();
-      filters.CCGDimension = dataMatches;
-      dimensions.ICPDimension = model.dimension((d) => convertCCGtoICS(d.ccg));
-      groups.ICPDimension = dimensions.ICPDimension.group();
-      filters.ICPDimension = dataMatches;
-      dimensions.LCntDimension = model.dimension((d) => d.lcnt);
-      groups.LCntDimension = dimensions.LCntDimension.group();
-      filters.LCntDimension = dataMatchesFivePlus;
-      dimensions.AgeDimension = model.dimension((d) => d.age);
-      groups.AgeDimension = dimensions.AgeDimension.group((g) => Math.floor(g));
-      filters.AgeDimension = dataWithinRange;
-      dimensions.RskDimension = model.dimension((d) => Math.min(100, d.rsk));
-      groups.RskDimension = dimensions.RskDimension.group((g) => Math.floor(g));
-      filters.RskDimension = dataWithinRange;
-      dimensions.DDimension = model.dimension((dim) => dim.d);
-      groups.DDimension = dimensions.DDimension.group();
-      filters.DDimension = dataMatches;
-      dimensions.WDimension = model.dimension((dim) => dim.w);
-      groups.WDimension = dimensions.WDimension.group();
-      filters.WDimension = dataMatches;
-      dimensions.numberSelLtc = model.dimension((d) => d.NoSelectedLtcs);
-      groups.numberSelLtc = dimensions.numberSelLtc.group();
-      filters.numberSelLtc = dataMatches;
 
-      // @ts-ignore
-      dimensions.FlagsDimension = model.dimension((d) => d.flags["Flags"], true);
-      groups.FlagsDimension = dimensions.FlagsDimension.group();
-      filters.FlagsDimension = filterContains;
-      // @ts-ignore
-      dimensions.Flags2Dimension = model.dimension((d) => d.flags["Flags"], true);
-      groups.Flags2Dimension = dimensions.Flags2Dimension.group();
-      filters.Flags2Dimension = filterContains;
-      dimensions.FCntDimension = model.dimension((d) => d.fcnt);
-      groups.FCntDimension = dimensions.FCntDimension.group();
-      filters.FCntDimension = dataMatchesFivePlus;
-      dimensions.numberSelFlag = model.dimension((d) => d.NoSelectedFlags);
-      groups.numberSelFlag = dimensions.numberSelFlag.group();
-      filters.numberSelFlag = dataMatches;
-
-      dimensions.MatrixDimension = model.dimension((d) => [d.cr, d.cv]);
-      groups.MatrixDimension = dimensions.MatrixDimension.group();
-      filters.MatrixDimension = arrayFilterContains;
-
+      thisConfig.dimensions.forEach((dim) => {
+        switch (dim.type) {
+          case "number":
+            dimensions[dim.name] = model.dimension((d) => {
+              return +d[dim.tableCol];
+            });
+            break;
+          case "date":
+            dimensions[dim.name] = model.dimension((d) => {
+              return new Date(d[dim.tableCol]);
+            });
+            break;
+          case "array":
+            dimensions[dim.name] = model.dimension((d) => {
+              return d[dim.tableCol][dim.tableColArr || dim.tableCol];
+            }, true);
+            break;
+          case "stringConvert":
+            dimensions[dim.name] = model.dimension((d) => dim.function(d[dim.tableCol]));
+            break;
+          case "dualArray":
+            const tableColSplit = dim.tableCol.split(",");
+            dimensions[dim.name] = model.dimension((d) => [d[tableColSplit[0]], d[tableColSplit[1]]]);
+            break;
+          default:
+            dimensions[dim.name] = model.dimension((d) => {
+              return d[dim.tableCol];
+            });
+            break;
+        }
+        if (dim.functiontype === "dataWithinRange") groups[dim.name] = dimensions[dim.name].group((g) => Math.floor(g));
+        else groups[dim.name] = dimensions[dim.name].group();
+        filters[dim.name] = dataFilterFunction(dim.functiontype);
+      });
       console.log("Full Crossfilter Populated");
     }
     if (callback) {
@@ -157,6 +141,25 @@ module.exports.getDimensions = function () {
 };
 module.exports.getDataset = function () {
   return dataset;
+};
+
+const dataFilterFunction = function (functiontype) {
+  switch (functiontype) {
+    case "matches":
+      return dataMatches;
+    case "arrayFilterContains":
+      return arrayFilterContains;
+    case "filterContains":
+      return filterContains;
+    case "dataWithinRange":
+      return dataWithinRange;
+    case "dataWithinRangeDate":
+      return dataWithinRangeDate;
+    case "dataMatchesFivePlus":
+      return dataMatchesFivePlus;
+    default:
+      return dataMatches;
+  }
 };
 
 const dataMatches = function (data, filter) {
@@ -224,8 +227,8 @@ const getResults = function (filter) {
   thisNDX.init();
   if (filter) {
     thisNDX.addCounts(filter);
-    thisNDX.dimensions.numberSelLtc.filterAll();
-    thisNDX.dimensions.numberSelFlag.filterAll();
+    if (thisNDX.dimensions["numberSelLtc"]) thisNDX.dimensions["numberSelLtc"].filterAll();
+    if (thisNDX.dimensions["numberSelFlag"]) thisNDX.dimensions["numberSelFlag"].filterAll();
   }
   const dims = Object.keys(thisNDX.dimensions);
   dims.forEach((dim) => {
@@ -484,30 +487,5 @@ const convertDimToChartName = function (dimName) {
       break;
     default:
       return "NOTUSED";
-  }
-};
-
-const convertCCGtoICS = function (value) {
-  switch (value) {
-    case "02M":
-    case "00R":
-      return "Fylde Coast";
-    case "02G":
-      return "West Lancs";
-    case "00Q":
-    case "01A":
-      // "Blackburn with Darwen CCG" 00Q
-      // "East Lancs CCG" 01A
-      return "Pennine Lancashire";
-    case "00X":
-    case "01E":
-      // "Chorley and South Ribble CCG" 00X
-      // "Greater Preston CCG" 01E
-      return "Central Lancashire";
-    case "01K":
-      // "Lancashire North CCG" 01K
-      return "Morecambe Bay";
-    default:
-      return "Other";
   }
 };
