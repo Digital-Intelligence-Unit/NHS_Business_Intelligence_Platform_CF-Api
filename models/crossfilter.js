@@ -81,15 +81,27 @@ module.exports.buildCrossfilter = function (callback) {
       console.log("Building Dimensions...");
 
       thisConfig.dimensions.forEach((dim) => {
+        console.log("Building Dimension: " + dim.name);
         switch (dim.type) {
+          case "location":
+            dimensions[dim.name] = model.dimension((d) => {
+              return flattenLocation(d[dim.tableCol], d);
+            });
+            break;
           case "number":
             dimensions[dim.name] = model.dimension((d) => {
               return +d[dim.tableCol];
             });
             break;
+          case "numberSimple":
+            dimensions[dim.name] = model.dimension((d) => {
+              if (d[dim.tableCol] === undefined || d[dim.tableCol] === null) return -1;
+              else return d[dim.tableCol];
+            });
+            break;
           case "date":
             dimensions[dim.name] = model.dimension((d) => {
-              return new Date(d[dim.tableCol]);
+              return d[dim.tableCol] !== "null" && d[dim.tableCol] ? new Date(d[dim.tableCol]) : new Date("1900-01-01");
             });
             break;
           case "array":
@@ -97,8 +109,13 @@ module.exports.buildCrossfilter = function (callback) {
               return d[dim.tableCol][dim.tableColArr || dim.tableCol];
             }, true);
             break;
+          case "arraySimple":
+            dimensions[dim.name] = model.dimension((d) => {
+              return d.medication || ["Unknown"];
+            }, true);
+            break;
           case "stringConvert":
-            dimensions[dim.name] = model.dimension((d) => dim.function(d[dim.tableCol]));
+            dimensions[dim.name] = model.dimension((d) => dim.function(d, dim.tableCol));
             break;
           case "dualArray":
             const tableColSplit = dim.tableCol.split(",");
@@ -110,7 +127,7 @@ module.exports.buildCrossfilter = function (callback) {
             });
             break;
         }
-        if (dim.functiontype === "dataWithinRange") groups[dim.name] = dimensions[dim.name].group((g) => Math.floor(g));
+        if (dim.groupFloor) groups[dim.name] = dimensions[dim.name].group((g) => Math.floor(g));
         else groups[dim.name] = dimensions[dim.name].group();
         filters[dim.name] = dataFilterFunction(dim.functiontype);
       });
@@ -157,9 +174,23 @@ const dataFilterFunction = function (functiontype) {
       return dataWithinRangeDate;
     case "dataMatchesFivePlus":
       return dataMatchesFivePlus;
+    case "postcodeMatches":
+      return postcodeMatches;
     default:
       return dataMatches;
   }
+};
+
+const postcodeMatches = function (data, filter) {
+  let flag = false;
+  data.forEach((datum) => {
+    if (datum !== "Unknown") {
+      if (filter.includes(datum.split("|")[0])) {
+        flag = true;
+      }
+    }
+  });
+  return flag;
 };
 
 const dataMatches = function (data, filter) {
@@ -248,15 +279,31 @@ const getResults = function (filter) {
         var filts = [];
         filterObj.forEach((x) => filts.push(x[0]));
         thisNDX.dimensions.Flags2Dimension.filterFunction((d) => thisNDX.filters.Flags2Dimension(d, filts));
+      } else if (dimension === "AgeDimension" && tablename === "population_health_mini") {
+        var filterObj = filter[dimension][0];
+        var lower = parseInt(filterObj.split("-")[0].trim());
+        var upper = parseInt(filterObj.split("-")[1].trim());
+        thisNDX.dimensions.AgeDimension.filterFunction((d) => {
+          const age = parseInt(d.split(":")[1]);
+          if (age >= lower && age <= upper) {
+            return true;
+          }
+          return false;
+        });
       } else {
         thisNDX.dimensions[dimension].filterFunction((d) => thisNDX.filters[dimension](d, filterObj));
       }
     } else {
       thisNDX.dimensions[dimension].filter(null);
     }
+
+    let topValue = 0;
+    if (group.top(1)[0]) {
+      topValue = group.top(1)[0].value;
+    }
     results[dimension] = {
       values: group.all(),
-      top: group.top(1)[0].value,
+      top: topValue,
       filts: filter[dimension],
     };
   }
@@ -442,50 +489,45 @@ const convertDimToChartName = function (dimName) {
   switch (dimName) {
     case "LDimension":
       return "neighbourhood-select-comp";
-      break;
     case "GPDimension":
       return "gp-map-leaflet-comp";
-      break;
     case "TDimension":
       return "taxonomy-chart-comp";
-      break;
     case "LTCsDimension":
       return "ltc-chart-comp";
-      break;
     case "FlagsDimension":
       return "flags-chart-comp";
-      break;
     case "SexDimension":
       return "sex-chart-comp";
-      break;
     case "MDimension":
       return "mosaic-chart-comp";
-      break;
     case "CCGDimension":
       return "ccg-select-comp";
-      break;
     case "LCntDimension":
       return "ltc-count-chart-comp";
-      break;
     case "AgeDimension":
       return "age-chart-comp";
-      break;
     case "RskDimension":
       return "risk-chart-comp";
-      break;
     case "DDimension":
       return "imd-chart-comp";
-      break;
     case "WDimension":
       return "ward-map-leaflet-comp";
-      break;
     case "UDimension":
       return "cost-group-chart-comp";
-      break;
     case "MatrixDimension":
       return "matrix-chart-comp";
-      break;
+    case "CstDimension":
+      return "total-cost-chart-comp";
     default:
       return "NOTUSED";
+  }
+};
+
+const flattenLocation = (location, d) => {
+  if (location === undefined) {
+    return "Unknown";
+  } else {
+    return location.postcode + "|" + location.latitude + "|" + location.longitude + "|" + d.method + "|" + d.type;
   }
 };
