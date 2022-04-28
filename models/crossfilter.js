@@ -3,9 +3,9 @@
 const data = require("./data");
 const crossfilter = require("crossfilter2");
 const ndx = require("./ndx");
-let groups = {};
-let dimensions = {};
-let filters = {};
+const groups = {};
+const dimensions = {};
+const filters = {};
 let model;
 let dataset;
 const configurations = require("../config/cf_configurations").cfConfigurations;
@@ -16,35 +16,35 @@ module.exports.filterCF = function (filter, callback) {
 };
 
 module.exports.compareCF = function (filterA, filterB, callback) {
-    var finalCompareTable = [];
-    var BaselineCohortAggregatedData = JSON.parse(JSON.stringify(getData(filterA, getResults(filterA))));
-    var ComparatorCohortAggregatedData = JSON.parse(JSON.stringify(getData(filterB, getResults(filterB))));
+    const finalCompareTable = [];
+    const BaselineCohortAggregatedData = JSON.parse(JSON.stringify(getData(filterA, getResults(filterA))));
+    const ComparatorCohortAggregatedData = JSON.parse(JSON.stringify(getData(filterB, getResults(filterB))));
     BaselineCohortAggregatedData.data.forEach(function (baselineChart, ind) {
-        var chartName = convertDimToChartName(baselineChart.Name);
-        var baselineChartData = baselineChart.Data;
-        var comparitorChartData = ComparatorCohortAggregatedData.data[ind].Data;
-        var compTableItem;
-        var allChartItems = [];
-        if (chartName != "NOTUSED") {
-            Object.keys(baselineChartData).forEach(function (ind) {
-                var BaselineSpecItem = baselineChartData[ind];
-                finalCompareTable[chartName];
+        const chartName = convertDimToChartName(baselineChart.Name);
+        const baselineChartData = baselineChart.Data;
+        const comparitorChartData = ComparatorCohortAggregatedData.data[ind].Data;
+        let compTableItem;
+        const allChartItems = [];
+        if (chartName !== "NOTUSED") {
+            Object.keys(baselineChartData).forEach(function (indbaseline) {
+                const BaselineSpecItem = baselineChartData[ind];
+                // finalCompareTable[chartName];
                 compTableItem = {
                     chart: chartName,
                     key: BaselineSpecItem.key,
                     baselineValue: BaselineSpecItem.value,
                     baselineRate: BaselineSpecItem.rate,
-                    compValue: comparitorChartData[ind].value,
-                    compRate: comparitorChartData[ind].rate,
-                    ratio: (comparitorChartData[ind].rate / BaselineSpecItem.rate) * 100,
+                    compValue: comparitorChartData[indbaseline].value,
+                    compRate: comparitorChartData[indbaseline].rate,
+                    ratio: (comparitorChartData[indbaseline].rate / BaselineSpecItem.rate) * 100,
                 };
                 allChartItems.push(compTableItem);
             });
         }
         finalCompareTable.push({ chartname: chartName, chartdata: allChartItems });
     });
-    var baseline = BaselineCohortAggregatedData.denominator;
-    var comp = ComparatorCohortAggregatedData.denominator;
+    const baseline = BaselineCohortAggregatedData.denominator;
+    const comp = ComparatorCohortAggregatedData.denominator;
     callback(finalCompareTable, baseline, comp, null);
 };
 
@@ -57,9 +57,10 @@ module.exports.buildCrossfilter = function (callback) {
     const thisConfig = config[0];
     data.getAll(function (err, result) {
         if (err) {
-            console.log("Unable to build CF: " + err.toString());
+            const errResponse = "Unable to build CF: " + err.toString();
+            console.log(errResponse);
             if (callback) {
-                callback("Unable to build CF: " + err.toString(), null);
+                callback(errResponse, null);
             }
         } else {
             dataset = result;
@@ -76,12 +77,12 @@ module.exports.buildCrossfilter = function (callback) {
 
             console.log("Constructing CF...");
             model = crossfilter(dataset);
-            // @ts-ignore
-            const all = model.groupAll();
+            model.groupAll();
             console.log("Building Dimensions...");
 
             thisConfig.dimensions.forEach((dim) => {
                 console.log("Building Dimension: " + dim.name);
+                let tableColSplit;
                 switch (dim.type) {
                     case "location":
                         dimensions[dim.name] = model.dimension((d) => {
@@ -118,7 +119,7 @@ module.exports.buildCrossfilter = function (callback) {
                         dimensions[dim.name] = model.dimension((d) => dim.function(d, dim.tableCol));
                         break;
                     case "dualArray":
-                        const tableColSplit = dim.tableCol.split(",");
+                        tableColSplit = dim.tableCol.split(",");
                         dimensions[dim.name] = model.dimension((d) => [d[tableColSplit[0]], d[tableColSplit[1]]]);
                         break;
                     default:
@@ -181,9 +182,9 @@ const dataFilterFunction = function (functiontype) {
     }
 };
 
-const postcodeMatches = function (data, filter) {
+const postcodeMatches = function (items, filter) {
     let flag = false;
-    data.forEach((datum) => {
+    items.forEach((datum) => {
         if (datum !== "Unknown") {
             if (filter.includes(datum.split("|")[0])) {
                 flag = true;
@@ -193,13 +194,13 @@ const postcodeMatches = function (data, filter) {
     return flag;
 };
 
-const dataMatches = function (data, filter) {
-    return filter.includes(data);
+const dataMatches = function (items, filter) {
+    return filter.includes(items);
 };
 
-const filterContains = function (data, filter) {
+const filterContains = function (items, filter) {
     let flag = false;
-    data.forEach((filt) => {
+    items.forEach((filt) => {
         if (filter[0].includes(filt)) {
             flag = true;
         }
@@ -207,53 +208,53 @@ const filterContains = function (data, filter) {
     return flag;
 };
 
-const arrayFilterContains = function (data, filter) {
+const arrayFilterContains = function (items, filter) {
     let flag = false;
     filter.forEach((filt) => {
-        if (data[0] === filt[0] && data[1] === filt[1]) {
+        if (items[0] === filt[0] && items[1] === filt[1]) {
             flag = true;
         }
     });
     return flag;
 };
 
-const dataMatchesFivePlus = function (data, filter) {
+const dataMatchesFivePlus = function (items, filter) {
     filter.forEach((elem) => {
         if (elem.toString().includes("5")) {
             filter.splice(filter.indexOf(elem), 1, "5");
         }
     });
-    if (data.includes("5")) {
-        data = "5";
+    if (items.includes("5")) {
+        items = "5";
     }
-    return filter.includes(data);
+    return filter.includes(items);
 };
 
-const dataWithinRange = function (data, filter) {
+const dataWithinRange = function (items, filter) {
     let flag = false;
     if (filter.length < 2) {
         filter = filter[0];
     }
     const valA = parseInt(filter[0]);
     const valB = parseInt(filter[1]);
-    if (data >= valA && data <= valB) flag = true;
+    if (items >= valA && items <= valB) flag = true;
     return flag;
 };
 
 // @ts-ignore
-const dataWithinRangeDate = function (data, filter) {
+const dataWithinRangeDate = function (items, filter) {
     let flag = false;
     if (filter.length < 2) {
         filter = filter[0];
     }
     const valA = new Date(filter[0].substr(0, 10));
     const valB = new Date(filter[1].substr(0, 10));
-    if (new Date(data) >= valA && new Date(data) <= valB) flag = true;
+    if (new Date(items) >= valA && new Date(items) <= valB) flag = true;
     return flag;
 };
 
 const getResults = function (filter) {
-    var results = {};
+    const results = {};
     const thisNDX = new ndx.NDX();
     thisNDX.init();
     if (filter) {
@@ -265,24 +266,23 @@ const getResults = function (filter) {
     dims.forEach((dim) => {
         thisNDX.dimensions[dim].filterAll();
     });
-    for (let dimension in thisNDX.dimensions) {
-        var group = thisNDX.groups[dimension];
+
+    for (const dimension in thisNDX.dimensions) {
+        const group = thisNDX.groups[dimension];
         if (filter[dimension]) {
-            var filterObj = filter[dimension];
+            let filterObj = filter[dimension];
             if (dimension === "LTCs2Dimension") {
-                var filterObj = filter[dimension];
-                var filts = [];
+                const filts = [];
                 filterObj.forEach((x) => filts.push(x[0]));
                 thisNDX.dimensions.LTCsDimension.filterFunction((d) => thisNDX.filters.LTCsDimension(d, filts));
             } else if (dimension === "Flags2Dimension") {
-                var filterObj = filter[dimension];
-                var filts = [];
+                const filts = [];
                 filterObj.forEach((x) => filts.push(x[0]));
                 thisNDX.dimensions.Flags2Dimension.filterFunction((d) => thisNDX.filters.Flags2Dimension(d, filts));
             } else if (dimension === "AgeDimension" && tablename === "population_health_mini") {
-                var filterObj = filter[dimension][0];
-                var lower = parseInt(filterObj.split("-")[0].trim());
-                var upper = parseInt(filterObj.split("-")[1].trim());
+                filterObj = filter[dimension][0];
+                const lower = parseInt(filterObj.split("-")[0].trim());
+                const upper = parseInt(filterObj.split("-")[1].trim());
                 thisNDX.dimensions.AgeDimension.filterFunction((d) => {
                     const age = parseInt(d.split(":")[1]);
                     if (age >= lower && age <= upper) {
@@ -314,9 +314,9 @@ const getResults = function (filter) {
 };
 
 const getData = function (filter, group) {
-    var allChartData = [];
-    var fullPop = group.all.values;
-    var totalCohortPop = 0;
+    const allChartData = [];
+    const fullPop = group.all.values;
+    let totalCohortPop = 0;
     Object.keys(group).forEach(function (dimensionName) {
         if (dimensionName !== "LTCs2Dimension" && dimensionName !== "Flags2Dimension") {
             if (dimensionName === "SexDimension") {
@@ -325,16 +325,16 @@ const getData = function (filter, group) {
                 });
                 totalCohortPop = JSON.parse(JSON.stringify(totalCohortPop));
             }
-            var filterObj = filter;
-            var chartFilters = filterObj[dimensionName];
-            var usedData = [];
+            const filterObj = filter;
+            const chartFilters = filterObj[dimensionName];
+            let usedData = [];
 
-            var initialData = JSON.parse(JSON.stringify(group[dimensionName]["values"]));
+            let initialData = JSON.parse(JSON.stringify(group[dimensionName]["values"]));
 
-            if (chartFilters != undefined) {
+            if (chartFilters !== undefined) {
                 if (typeof chartFilters[0] == "object") {
-                    var lowVal = chartFilters[0][0];
-                    var highVal = chartFilters[0][1];
+                    const lowVal = chartFilters[0][0];
+                    const highVal = chartFilters[0][1];
 
                     initialData.forEach(function (e) {
                         if (e.key <= lowVal || e.key > highVal) {
@@ -347,7 +347,7 @@ const getData = function (filter, group) {
                     dimensionName !== "LTCsDimension" &&
                     dimensionName !== "FlagsDimension"
                 ) {
-                    var filterCats = chartFilters;
+                    const filterCats = chartFilters;
 
                     initialData.forEach(function (e) {
                         if (!(filterCats.indexOf(e.key) >= 0)) {
@@ -356,6 +356,16 @@ const getData = function (filter, group) {
                     });
                 }
             }
+
+            let agebandVal = {};
+            let riskbandVal = {};
+            const ageBandSize = 5;
+            let agebandLab;
+            let cumuPop;
+            let cutOffs = [3, 4, 5, 10, 20];
+            let lastCutoffNo = 0;
+            let filteredCutoffs;
+            let cutoffNo;
 
             switch (dimensionName) {
                 case "LTCsDimension":
@@ -393,17 +403,14 @@ const getData = function (filter, group) {
                     });
                     break;
                 case "AgeDimension":
-                    var agebandVal = {};
-                    var riskbandVal = {};
-                    var ageBandSize = 5;
-                    var agebandLab;
-
-                    var cumuPop = 0;
+                    agebandVal = {};
+                    riskbandVal = {};
+                    cumuPop = 0;
 
                     initialData.forEach(function (e, idx, array) {
                         cumuPop = cumuPop + e.value;
 
-                        if (e.key % ageBandSize == ageBandSize - 1) {
+                        if (e.key % ageBandSize === ageBandSize - 1) {
                             agebandLab = (e.key - (ageBandSize - 1)).toString().concat(" - ", e.key);
 
                             agebandVal = {
@@ -426,12 +433,9 @@ const getData = function (filter, group) {
 
                     break;
                 case "RskDimension":
-                    var cutOffs = [3, 4, 5, 10, 20];
-
-                    var cumuPop = 0;
-                    var lastCutoffNo = 0;
-                    var filteredCutoffs;
-                    var cutoffNo;
+                    cutOffs = [3, 4, 5, 10, 20];
+                    cumuPop = 0;
+                    lastCutoffNo = 0;
 
                     initialData.forEach(function (e, idx, array) {
                         filteredCutoffs = cutOffs.filter(function (x) {
@@ -471,12 +475,12 @@ const getData = function (filter, group) {
                 usedData.forEach(function (e) {
                     e.rate = e.value / fullPop;
                 });
-                if (dimensionName != "AgeDimension") {
+                if (dimensionName !== "AgeDimension") {
                     usedData = usedData.reverse();
                 }
             }
 
-            var pushObject = {};
+            const pushObject = {};
             pushObject["Name"] = dimensionName;
             pushObject["Data"] = usedData;
             allChartData.push(pushObject);

@@ -1,9 +1,8 @@
-//@ts-check
-
 const request = require("supertest");
 const { SecureEndpoints } = require("./endpoints");
 const testapp = require("../testapp");
-var app, nonToken;
+let app;
+let nonToken;
 
 describe("Test the Security of All Protected Endpoints", () => {
     SecureEndpoints.forEach((endpoint) => {

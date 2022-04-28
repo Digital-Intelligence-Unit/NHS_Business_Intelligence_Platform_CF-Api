@@ -207,7 +207,6 @@ module.exports.cfConfigurations = [
                 tableCol: "inquest_conclusion",
                 function: convertValueOrUnknown,
             },
-            // { name: "inquest_date", type: "date", functiontype: "dateWithinRange", tableCol: "inquest_date" }, TODO: Dimension doesn't work, is there a problem with the data quality?
             {
                 name: "rts_accurate",
                 type: "stringConvert",

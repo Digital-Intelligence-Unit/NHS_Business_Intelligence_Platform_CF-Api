@@ -17,7 +17,7 @@ module.exports.NDX = class NDX {
         this.groups = Object.assign(cf.getGroups());
         this.filters = Object.assign(cf.getFilters());
 
-        for (let [key, value] of Object.entries(this.dimensions)) {
+        for (const [, value] of Object.entries(this.dimensions)) {
             value.filterAll();
         }
 
@@ -38,13 +38,13 @@ module.exports.NDX = class NDX {
         const counters = config.dimensions.filter((x) => x.countDim);
 
         try {
-            let allFilts = [];
+            const allFilts = [];
             counters.forEach((option) => {
-                var filts = [];
+                const filts = [];
                 const arr = filter[option.fieldtoCount];
                 if (arr && arr.length > 0) arr.forEach((x) => filts.push(x[0]));
                 const relatedDim = config.dimensions.find((x) => x.name === option.fieldtoCount);
-                allFilts.push({ filters: filts, dimension: option, relatedDim: relatedDim });
+                allFilts.push({ filters: filts, dimension: option, relatedDim });
             });
 
             const items = cf.getDataset();

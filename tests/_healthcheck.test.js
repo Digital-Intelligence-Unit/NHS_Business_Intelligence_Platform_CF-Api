@@ -1,8 +1,6 @@
-// //@ts-check
-
 const request = require("supertest");
 const testapp = require("../testapp");
-var app;
+let app;
 
 describe("Test the root path", () => {
     test("It should check the invalid endpoint as a standard Health Check", async (done) => {

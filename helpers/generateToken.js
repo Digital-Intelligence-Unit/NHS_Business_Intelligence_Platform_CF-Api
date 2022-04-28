@@ -6,7 +6,7 @@ module.exports.generateToken = function (username) {
     const returnUser = {
         _id: username,
         name: null,
-        username: username,
+        username,
         email: null,
         organisation: "Testing",
         authentication: "citizen",
@@ -20,7 +20,7 @@ module.exports.generateInvalidToken = function (username, newsecret, expired) {
     const returnUser = {
         _id: username,
         name: null,
-        username: username,
+        username,
         email: null,
         organisation: "Testing",
         authentication: "citizen",
