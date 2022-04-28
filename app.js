@@ -65,8 +65,8 @@ const parseMessage = function (message) {
         responsetime: variables[4],
         date: variables[5],
         token: {
-            username: username,
-            organisation: organisation,
+            username,
+            organisation,
         },
     };
 };
@@ -87,24 +87,25 @@ const awstransport = new CloudWatchTransport({
     formatLog: (item) => `${item.level}: ${item.message} ${JSON.stringify(item.meta)}`,
 });
 // @ts-ignore
+// eslint-disable-next-line new-cap
 const logger = new winston.createLogger({
-        transports: [awstransport],
-        format: winston.format.combine(addAppNameFormat(), winston.format.json()),
-        // @ts-ignore
-        dynamicMeta: function (req, res, err) {
-            return req.header;
-        },
-        meta: true,
-        expressFormat: true,
-        colorize: false,
-    }),
-    loggerstream = {
-        write: function (message, encoding) {
-            logger.info(message.replace(/\n$/, ""), {
-                metaData: parseMessage(message.replace(/\n$/, "")),
-            });
-        },
-    };
+    transports: [awstransport],
+    format: winston.format.combine(addAppNameFormat(), winston.format.json()),
+    // @ts-ignore
+    dynamicMeta: function (req) {
+        return req.header;
+    },
+    meta: true,
+    expressFormat: true,
+    colorize: false,
+});
+const loggerstream = {
+    write: function (message) {
+        logger.info(message.replace(/\n$/, ""), {
+            metaData: parseMessage(message.replace(/\n$/, "")),
+        });
+    },
+};
 app.use(
     morgan(":method|:url|:status|:res[content-length]|:response-time|:date[iso]|:token", {
         stream: loggerstream,
@@ -138,7 +139,7 @@ app.get("/", (req, res) => {
 // BUILD CROSSFILTER OBJECT ON LOAD
 // =============================================================================
 const crossfilter = require("./models/crossfilter");
-const initbuild = crossfilter.buildCrossfilter(null);
+console.log(crossfilter);
 
 // EXPORT APP
 // =============================================================================

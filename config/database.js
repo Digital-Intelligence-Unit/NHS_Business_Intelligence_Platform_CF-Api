@@ -6,9 +6,9 @@ const pgdb = process.env.PGDATABASE || "localhost";
 const pgport = process.env.PGPORT || "5433";
 const credentials = require("../_credentials/credentials");
 
-var AWS = require("aws-sdk");
+const AWS = require("aws-sdk");
 AWS.config.region = region;
-var creds = new AWS.Credentials({
+const creds = new AWS.Credentials({
     accessKeyId: credentials.aws_secret_id,
     secretAccessKey: credentials.aws_secret_key,
 });
@@ -19,9 +19,9 @@ module.exports.settings = {
     awsenvironment: access,
     accessKeyId: credentials.aws_secret_id,
     secretAccessKey: credentials.aws_secret_key,
-    AWS: AWS,
+    AWS,
     pgdatabase: pgdb,
-    pgport: pgport,
+    pgport,
     postgres_un: credentials.postgres_un,
     postgres_pw: credentials.postgres_pw,
 };
