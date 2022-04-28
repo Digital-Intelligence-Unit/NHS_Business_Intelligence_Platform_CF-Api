@@ -87,7 +87,6 @@ const awstransport = new CloudWatchTransport({
     formatLog: (item) => `${item.level}: ${item.message} ${JSON.stringify(item.meta)}`,
 });
 // @ts-ignore
-// eslint-disable-next-line new-cap
 const logger = new winston.createLogger({
     transports: [awstransport],
     format: winston.format.combine(addAppNameFormat(), winston.format.json()),

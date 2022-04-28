@@ -4,6 +4,7 @@ module.exports = {
         commonjs: true,
         es2021: true,
         node: true,
+        jest: true,
     },
     extends: ["standard"],
     parserOptions: {
@@ -29,6 +30,7 @@ module.exports = {
                 code: 140,
             },
         ],
+        "new-cap": "off",
         "new-parens": "error",
         "no-bitwise": "error",
         "no-caller": "error",

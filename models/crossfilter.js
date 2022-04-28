@@ -77,9 +77,7 @@ module.exports.buildCrossfilter = function (callback) {
 
             console.log("Constructing CF...");
             model = crossfilter(dataset);
-            // @ts-ignore
-            // eslint-disable-next-line no-unused-vars
-            const all = model.groupAll();
+            model.groupAll();
             console.log("Building Dimensions...");
 
             thisConfig.dimensions.forEach((dim) => {
