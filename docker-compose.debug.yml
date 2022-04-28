@@ -1,16 +1,16 @@
 version: "2.1"
 
 services:
-  api-cfserver:
-    image: api-cfserver
-    build: .
-    environment:
-      - PGPORT=5433 # The postgreSQL port available locally after tunnelling
-      - DEV="true"
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-    ports:
-      - 8079:8079
-      - 9229:9229
-    command: node --inspect=0.0.0.0:9229 server
+    api-cfserver:
+        image: api-cfserver
+        build: .
+        environment:
+            - PGPORT=5433 # The postgreSQL port available locally after tunnelling
+            - DEV="true"
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+        ports:
+            - 8079:8079
+            - 9229:9229
+        command: node --inspect=0.0.0.0:9229 server

@@ -28,21 +28,21 @@ const CF = require("../models/crossfilter");
  *         description: Full List
  */
 router.get(
-  "/getCrossfilter",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const filter = req.params["filter"] ? JSON.parse(req.params["filter"]) : {};
-    NDXfilter(filter, (cf, err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send(err);
-      } else {
-        res.status(200).send(cf);
-      }
-    });
-  }
+    "/getCrossfilter",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const filter = req.params["filter"] ? JSON.parse(req.params["filter"]) : {};
+        NDXfilter(filter, (cf, err) => {
+            if (err) {
+                console.error(err);
+                res.status(500).send(err);
+            } else {
+                res.status(200).send(cf);
+            }
+        });
+    }
 );
 
 /**
@@ -61,25 +61,25 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/rebuildCrossfilter",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    CF.buildCrossfilter((err, result) => {
-      if (err) {
-        res.status(400).json({
-          success: false,
-          msg: err,
+    "/rebuildCrossfilter",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        CF.buildCrossfilter((err, result) => {
+            if (err) {
+                res.status(400).json({
+                    success: false,
+                    msg: err,
+                });
+            } else {
+                res.status(200).json({
+                    success: true,
+                    msg: result,
+                });
+            }
         });
-      } else {
-        res.status(200).json({
-          success: true,
-          msg: result,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -130,34 +130,34 @@ router.get(
  *         description: Full List
  */
 router.post(
-  "/getComparison",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const cohortBaselineFilter = req.body.cohorta;
-    const cohortComparatorFilter = req.body.cohortb;
-    if (cohortBaselineFilter.cohorturl && cohortComparatorFilter.cohorturl) {
-      const a = JSON.parse(cohortBaselineFilter.cohorturl);
-      const b = JSON.parse(cohortComparatorFilter.cohorturl);
-      CF.compareCF(a, b, function (cf, baseline, comp, err) {
-        if (err) {
-          console.error(err);
-          res.status(500).send({ err: "Problem calculating comparison: " + err });
+    "/getComparison",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const cohortBaselineFilter = req.body.cohorta;
+        const cohortComparatorFilter = req.body.cohortb;
+        if (cohortBaselineFilter.cohorturl && cohortComparatorFilter.cohorturl) {
+            const a = JSON.parse(cohortBaselineFilter.cohorturl);
+            const b = JSON.parse(cohortComparatorFilter.cohorturl);
+            CF.compareCF(a, b, function (cf, baseline, comp, err) {
+                if (err) {
+                    console.error(err);
+                    res.status(500).send({ err: "Problem calculating comparison: " + err });
+                } else {
+                    res.status(200).send({
+                        details: cf,
+                        baselinePop: baseline,
+                        comparisonPop: comp,
+                    });
+                }
+            });
         } else {
-          res.status(200).send({
-            details: cf,
-            baselinePop: baseline,
-            comparisonPop: comp,
-          });
+            res.status(400).send({
+                err: "No cohorts provided",
+            });
         }
-      });
-    } else {
-      res.status(400).send({
-        err: "No cohorts provided",
-      });
     }
-  }
 );
 
 module.exports = router;
