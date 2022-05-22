@@ -3,7 +3,7 @@
 const region = process.env.AWSREGION || "eu-west-2";
 const access = process.env.AWSPROFILE || "Dev";
 const pgdb = process.env.PGDATABASE || "localhost";
-const pgport = process.env.PGPORT || "5433";
+const pgport = process.env.PGPORT || "5432";
 const credentials = require("../_credentials/credentials");
 
 const AWS = require("aws-sdk");

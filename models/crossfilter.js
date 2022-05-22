@@ -200,11 +200,17 @@ const dataMatches = function (items, filter) {
 
 const filterContains = function (items, filter) {
     let flag = false;
-    items.forEach((filt) => {
-        if (filter[0].includes(filt)) {
+    if (Array.isArray(items)) {
+        items.forEach((filt) => {
+            if (filter[0].includes(filt)) {
+                flag = true;
+            }
+        });
+    } else {
+        if (items.includes(filter)) {
             flag = true;
         }
-    });
+    }
     return flag;
 };
 
