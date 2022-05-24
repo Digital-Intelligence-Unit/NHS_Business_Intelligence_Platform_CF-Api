@@ -7,7 +7,7 @@
         "npm": "~6"
     },
     "scripts": {
-        "start": "node server",
+        "start": "node --max-old-space-size=8192 server",
         "start:dev": "set DEV=true && node server",
         "test": "jest tests --runInBand --detectOpenHandles --forceExit",
         "test-coverage": "jest tests --coverage --runInBand --detectOpenHandles --forceExit"
