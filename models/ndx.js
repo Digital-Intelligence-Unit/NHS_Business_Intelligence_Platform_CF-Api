@@ -11,29 +11,26 @@ module.exports.NDX = class NDX {
     }
 
     init() {
-        const model = cf.getModel();
-        if (model) {
-            this.ndx = Object.assign(model);
-            this.all = this.ndx.groupAll();
-            this.dimensions = Object.assign(cf.getDimensions());
-            this.groups = Object.assign(cf.getGroups());
-            this.filters = Object.assign(cf.getFilters());
+        this.ndx = Object.assign(cf.getModel());
+        this.all = this.ndx.groupAll();
+        this.dimensions = Object.assign(cf.getDimensions());
+        this.groups = Object.assign(cf.getGroups());
+        this.filters = Object.assign(cf.getFilters());
 
-            for (const [, value] of Object.entries(this.dimensions)) {
-                value.filterAll();
-            }
-
-            const config = configurations.find((x) => x.name === tablename) || configurations[0];
-
-            const counters = config.dimensions.filter((x) => x.countDim);
-            counters.forEach((dim) => {
-                this.dimensions[dim.name].dispose();
-                this.groups[dim.name].dispose();
-                this.dimensions[dim.name] = this.ndx.dimension((d) => d[dim.tableCol]);
-                this.groups[dim.name] = this.dimensions[dim.name].group();
-                this.filters[dim.name] = dataMatches;
-            });
+        for (const [, value] of Object.entries(this.dimensions)) {
+            value.filterAll();
         }
+
+        const config = configurations.find((x) => x.name === tablename) || configurations[0];
+
+        const counters = config.dimensions.filter((x) => x.countDim);
+        counters.forEach((dim) => {
+            this.dimensions[dim.name].dispose();
+            this.groups[dim.name].dispose();
+            this.dimensions[dim.name] = this.ndx.dimension((d) => d[dim.tableCol]);
+            this.groups[dim.name] = this.dimensions[dim.name].group();
+            this.filters[dim.name] = dataMatches;
+        });
     }
 
     addCounts(filter) {

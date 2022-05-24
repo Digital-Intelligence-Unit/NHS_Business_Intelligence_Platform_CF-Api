@@ -138,7 +138,7 @@ app.get("/", (req, res) => {
 // BUILD CROSSFILTER OBJECT ON LOAD
 // =============================================================================
 const crossfilter = require("./models/crossfilter");
-crossfilter.buildCrossfilter();
+console.log(crossfilter.buildCrossfilter());
 
 // EXPORT APP
 // =============================================================================
