@@ -48,7 +48,7 @@ const convertBoolToYesNo = (dim, col) => {
 module.exports.cfConfigurations = [
     {
         name: "covid_populations",
-        dataQuery: "SELECT ccg, age, sex, rsk, w, m, d, l, gp, lcnt, fcnt, ltcs, flags, cr, cv FROM covid_populations LIMIT 100;",
+        dataQuery: "SELECT ccg, age, sex, rsk, w, m, d, l, gp, lcnt, fcnt, ltcs, flags, cr, cv FROM covid_populations;",
         selectedCounts: ["NoSelectedLtcs", "NoSelectedFlags"],
         dimensions: [
             { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
@@ -88,7 +88,7 @@ module.exports.cfConfigurations = [
     },
     {
         name: "population_health",
-        dataQuery: "SELECT ccg, age, sex, rsk, w, t, m, d, l, gp, u, cst, lcnt, ltcs FROM public.populations LIMIT 1000;",
+        dataQuery: "SELECT ccg, age, sex, rsk, w, t, m, d, l, gp, u, cst, lcnt, ltcs FROM public.populations;",
         selectedCounts: ["NoSelectedLtcs"],
         dimensions: [
             { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
@@ -119,7 +119,7 @@ module.exports.cfConfigurations = [
     },
     {
         name: "population_health_mini",
-        dataQuery: "SELECT age, w, d, sex FROM public.populations LIMIT 1000;",
+        dataQuery: "SELECT age, w, d, sex FROM public.populations;",
         selectedCounts: [],
         dimensions: [
             { name: "DDimension", type: "string", functiontype: "dataMatches", tableCol: "d" },

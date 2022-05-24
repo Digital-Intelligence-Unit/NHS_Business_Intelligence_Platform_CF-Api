@@ -50,17 +50,20 @@ module.exports.compareCF = function (filterA, filterB, callback) {
 
 module.exports.buildCrossfilter = function (callback) {
     const config = configurations.filter((x) => x.name === tablename);
+    console.log(config);
     if (config.length === 0) {
         console.log("Unable to configure crossfilter for " + tablename);
         return;
     }
     const thisConfig = config[0];
-    data.getAll(function (err, result) {
-        if (err) {
-            const errResponse = "Unable to build CF: " + err.toString();
-            console.log(errResponse);
+    data.getAll(function (errResponse, result) {
+        if (errResponse) {
+            console.log("Unable to build CF: " + errResponse);
             if (callback) {
                 callback(errResponse, null);
+                return;
+            } else {
+                throw new Error(errResponse);
             }
         } else {
             dataset = result;
