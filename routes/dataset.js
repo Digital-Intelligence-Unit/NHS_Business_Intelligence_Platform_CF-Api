@@ -4,6 +4,7 @@ const router = express.Router();
 const passport = require("passport");
 const NDXfilter = require("../models/crossfilter").filterCF;
 const CF = require("../models/crossfilter");
+const Changes = require("../models/changes");
 
 /**
  * @swagger
@@ -157,6 +158,162 @@ router.post(
                 err: "No cohorts provided",
             });
         }
+    }
+);
+
+/**
+ * @swagger
+ * /dataset/remove:
+ *   delete:
+ *     security:
+ *      - JWT: []
+ *     description: Removes the Item from the crossfilter object
+ *     tags:
+ *      - Dataset
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *         - in: body
+ *           name: item
+ *           description: Item to remove
+ *           schema:
+ *                type: object
+ *     responses:
+ *       200:
+ *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+router.delete(
+    "/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const item = req.body;
+        Changes.removeItem(item, (err, result) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to remove: " + err,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "Item removed",
+                    data: item,
+                });
+            }
+        });
+    }
+);
+
+/**
+ * @swagger
+ * /dataset/update:
+ *   put:
+ *     security:
+ *      - JWT: []
+ *     description: Updates an Item in the crossfilter object
+ *     tags:
+ *      - Dataset
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *         - in: body
+ *           name: item
+ *           description: Item to remove
+ *           schema:
+ *                type: object
+ *     responses:
+ *       200:
+ *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put(
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const item = req.body;
+        Changes.updateItem(item, (err, result) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to update: " + err,
+                });
+            } else {
+                if (result) {
+                    res.json({
+                        success: true,
+                        msg: "Item updated",
+                        data: item,
+                    });
+                } else {
+                    res.status(404).json({
+                        success: false,
+                        msg: "Item not found",
+                    });
+                }
+            }
+        });
+    }
+);
+
+/**
+ * @swagger
+ * /dataset/register:
+ *   post:
+ *     security:
+ *      - JWT: []
+ *     description: Adds an Item in the crossfilter object
+ *     tags:
+ *      - Dataset
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *         - in: body
+ *           name: item
+ *           description: Item to remove
+ *           schema:
+ *                type: object
+ *     responses:
+ *       200:
+ *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post(
+    "/register",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const item = req.body;
+        Changes.addItem(item, (err, result) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to added: " + err,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "Item added",
+                    data: item,
+                });
+            }
+        });
     }
 );
 

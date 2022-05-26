@@ -56,3 +56,4 @@ The below example shows the dimensions, groups and filters required for our Covi
 - realtime_surveillance
 - population_health
 - population_health_mini
+- outbreakmap
