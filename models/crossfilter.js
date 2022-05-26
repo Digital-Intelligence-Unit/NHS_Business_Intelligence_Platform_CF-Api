@@ -50,7 +50,6 @@ module.exports.compareCF = function (filterA, filterB, callback) {
 
 module.exports.buildCrossfilter = function (callback) {
     const config = configurations.filter((x) => x.name === tablename);
-    console.log(config);
     if (config.length === 0) {
         console.log("Unable to configure crossfilter for " + tablename);
         return;
@@ -101,6 +100,13 @@ module.exports.buildCrossfilter = function (callback) {
                         dimensions[dim.name] = model.dimension((d) => {
                             if (d[dim.tableCol] === undefined || d[dim.tableCol] === null) return -1;
                             else return d[dim.tableCol];
+                        });
+                        break;
+                    case "date_stringArray":
+                        tableColSplit = dim.tableCol.split(",");
+                        dimensions[dim.name] = model.dimension((d) => {
+                            const date = new Date(d[tableColSplit[0]]).toISOString().substr(0, 10);
+                            return [date, d[tableColSplit[1]]];
                         });
                         break;
                     case "date":
@@ -176,6 +182,8 @@ const dataFilterFunction = function (functiontype) {
             return dataWithinRange;
         case "dataWithinRangeDate":
             return dataWithinRangeDate;
+        case "agebandMatch":
+            return agebandMatch;
         case "dataMatchesFivePlus":
             return dataMatchesFivePlus;
         case "postcodeMatches":
@@ -261,6 +269,19 @@ const dataWithinRangeDate = function (items, filter) {
     if (new Date(items) >= valA && new Date(items) <= valB) flag = true;
     return flag;
 };
+
+const agebandMatch = function (item, filter) {
+    let flag = false;
+    filter.forEach((elem) => {
+        if (elem[0].toString() === item[0].toString() && elem[1] && item[1] && normalise(elem[1]) === normalise(item[1])) flag = true;
+    });
+
+    return flag;
+};
+
+function normalise(original) {
+    return original.replace(/\D/g, "");
+}
 
 const getResults = function (filter) {
     const results = {};

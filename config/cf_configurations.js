@@ -128,6 +128,27 @@ module.exports.cfConfigurations = [
         ],
     },
     {
+        name: "outbreakmap",
+        dataQuery: `SELECT postcodenowhite as code, patient_sex, age_in_years as age, age_band,
+        specimen_date as date, utla, pillar, ethnicity, patient_occupation, x, y, isoids, CASE
+          WHEN linked_to_care_home = 'Y' THEN 'Linked To Care Home' ELSE 'Not Linked To Care Home'
+        END AS care_home FROM public.covid19_cases_p1p2_isoid`,
+        selectedCounts: [],
+        dimensions: [
+            { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
+            { name: "age", type: "stringConvert", functiontype: "dataWithinRange", tableCol: "age" },
+            { name: "age_band", type: "date_stringArray", functiontype: "agebandMatch", tableCol: "date,age_band" },
+            { name: "code", type: "string", functiontype: "dataMatches", tableCol: "code" },
+            { name: "utla", type: "string", functiontype: "dataMatches", tableCol: "utla" },
+            { name: "patient_sex", type: "string", functiontype: "dataMatches", tableCol: "patient_sex" },
+            { name: "pillar", type: "string", functiontype: "dataMatches", tableCol: "pillar" },
+            { name: "ethnicity", type: "string", functiontype: "dataMatches", tableCol: "ethnicity" },
+            { name: "patient_occupation", type: "string", functiontype: "dataMatches", tableCol: "patient_occupation" },
+            { name: "care_home", type: "string", functiontype: "dataMatches", tableCol: "care_home" },
+            { name: "isoids", type: "string", functiontype: "dataMatches", tableCol: "isoids" },
+        ],
+    },
+    {
         name: "realtime_surveillance",
         type: "dynamodb",
         dataQuery: "suicidepreventionindex",

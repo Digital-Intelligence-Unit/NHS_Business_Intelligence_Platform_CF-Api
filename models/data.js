@@ -10,7 +10,6 @@ module.exports.getAll = function (callback) {
     const config = configurations.filter((x) => x.name === tablename);
     if (config.length === 0) {
         query = `SELECT ccg, age, sex, rsk, w, m, d, l, gp, lcnt, fcnt, ltcs, flags, cr, cv FROM ${tablename};`;
-        console.log(query);
         pool.query(query, (error, results) => {
             if (error) {
                 console.log("Error: " + error);
