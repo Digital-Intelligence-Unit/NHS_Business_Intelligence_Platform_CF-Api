@@ -136,7 +136,7 @@ module.exports.cfConfigurations = [
         selectedCounts: [],
         dimensions: [
             { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
-            { name: "age", type: "stringConvert", functiontype: "dataWithinRange", tableCol: "age" },
+            { name: "age", type: "string", functiontype: "dataWithinRange", tableCol: "age" },
             { name: "age_band", type: "date_stringArray", functiontype: "agebandMatch", tableCol: "date,age_band" },
             { name: "code", type: "string", functiontype: "dataMatches", tableCol: "code" },
             { name: "utla", type: "string", functiontype: "dataMatches", tableCol: "utla" },
