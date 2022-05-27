@@ -9,7 +9,7 @@ const filters = {};
 let model;
 let dataset;
 const configurations = require("../config/cf_configurations").cfConfigurations;
-const tablename = process.env.TABLENAME || "covid_populations";
+const tablename = process.env.TABLENAME || "outbreakmap";
 
 module.exports.filterCF = function (filter, callback) {
     callback(getResults(filter), null);
@@ -105,8 +105,12 @@ module.exports.buildCrossfilter = function (callback) {
                     case "date_stringArray":
                         tableColSplit = dim.tableCol.split(",");
                         dimensions[dim.name] = model.dimension((d) => {
-                            const date = new Date(d[tableColSplit[0]]).toISOString().substr(0, 10);
-                            return [date, d[tableColSplit[1]]];
+                            try {
+                                const date = new Date(d[tableColSplit[0]]).toISOString().substr(0, 10);
+                                return [date, d[tableColSplit[1]]];
+                            } catch (ex) {
+                                return [d[tableColSplit[0]], d[tableColSplit[1]]];
+                            }
                         });
                         break;
                     case "date":
