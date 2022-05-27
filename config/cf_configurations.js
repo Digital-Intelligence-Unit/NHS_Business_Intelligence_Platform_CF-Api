@@ -132,12 +132,12 @@ module.exports.cfConfigurations = [
         dataQuery: `SELECT postcodenowhite as code, patient_sex, age_in_years as age, age_band,
         specimen_date as date, utla, pillar, ethnicity, patient_occupation, x, y, isoids, CASE
           WHEN linked_to_care_home = 'Y' THEN 'Linked To Care Home' ELSE 'Not Linked To Care Home'
-        END AS care_home FROM public.covid19_cases_p1p2_isoid`,
+        END AS care_home FROM public.covid19_cases_p1p2_isoid;`,
         selectedCounts: [],
         dimensions: [
             { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
             { name: "age", type: "string", functiontype: "dataWithinRange", tableCol: "age" },
-            { name: "age_band", type: "date_stringArray", functiontype: "agebandMatch", tableCol: "date,age_band" },
+            { name: "age_band", type: "dualArray", functiontype: "agebandMatch", tableCol: "date,age_band" },
             { name: "code", type: "string", functiontype: "dataMatches", tableCol: "code" },
             { name: "utla", type: "string", functiontype: "dataMatches", tableCol: "utla" },
             { name: "patient_sex", type: "string", functiontype: "dataMatches", tableCol: "patient_sex" },
