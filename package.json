@@ -10,7 +10,9 @@
         "start": "node --max-old-space-size=8192 server",
         "start:dev": "set DEV=true && node server",
         "test": "jest tests --runInBand --detectOpenHandles --forceExit",
-        "test-coverage": "jest tests --coverage --runInBand --detectOpenHandles --forceExit"
+        "test-coverage": "jest tests --coverage --runInBand --detectOpenHandles --forceExit",
+        "lint": "npx eslint -c .eslintrc.js --ext .ts",
+        "lint:fix": "npx eslint -c .eslintrc.js --fix ."
     },
     "jest": {
         "setupFiles": [
