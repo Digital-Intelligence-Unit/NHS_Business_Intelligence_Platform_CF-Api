@@ -1,7 +1,7 @@
 // @ts-check
 const cf = require("./crossfilter");
 const configurations = require("../config/cf_configurations").cfConfigurations;
-const tablename = process.env.TABLENAME || "covid_populations";
+const tablename = process.env.TABLENAME || "realtime_surveillance";
 
 module.exports.NDX = class NDX {
     constructor() {

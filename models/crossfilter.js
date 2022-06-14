@@ -9,7 +9,7 @@ const filters = {};
 let model;
 let dataset;
 const configurations = require("../config/cf_configurations").cfConfigurations;
-const tablename = process.env.TABLENAME || "outbreakmap";
+const tablename = process.env.TABLENAME || "realtime_surveillance";
 
 module.exports.filterCF = function (filter, callback) {
     callback(getResults(filter), null);
@@ -115,7 +115,9 @@ module.exports.buildCrossfilter = function (callback) {
                         break;
                     case "date":
                         dimensions[dim.name] = model.dimension((d) => {
-                            return d[dim.tableCol] !== "null" && d[dim.tableCol] ? new Date(d[dim.tableCol]) : new Date("1900-01-01");
+                            return d[dim.tableCol] !== "null" && d[dim.tableCol] && Date.parse(d[dim.tableCol])
+                                ? new Date(d[dim.tableCol])
+                                : new Date("1900-01-01");
                         });
                         break;
                     case "array":
@@ -264,6 +266,8 @@ const dataWithinRange = function (items, filter) {
 
 // @ts-ignore
 const dataWithinRangeDate = function (items, filter) {
+    console.log(items);
+    console.log(filter);
     let flag = false;
     if (filter.length < 2) {
         filter = filter[0];
