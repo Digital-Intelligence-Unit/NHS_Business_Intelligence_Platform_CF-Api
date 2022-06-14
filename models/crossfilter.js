@@ -266,8 +266,6 @@ const dataWithinRange = function (items, filter) {
 
 // @ts-ignore
 const dataWithinRangeDate = function (items, filter) {
-    console.log(items);
-    console.log(filter);
     let flag = false;
     if (filter.length < 2) {
         filter = filter[0];
