@@ -48,7 +48,7 @@ const convertBoolToYesNo = (dim, col) => {
 const convertDateToDayOfTheWeek = (dim, col) => {
     const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const dateData = new Date(dim[col]);
-    let day = weekday[dateData.getDay()];
+    const day = weekday[dateData.getDay()];
     if (day) {
         return day;
     } else {
@@ -72,7 +72,7 @@ const convertDateToMonth = (dim, col) => {
         "December",
     ];
     const dateData = new Date(dim[col]);
-    let month = months[dateData.getMonth()];
+    const month = months[dateData.getMonth()];
     if (month) {
         return month;
     } else {
