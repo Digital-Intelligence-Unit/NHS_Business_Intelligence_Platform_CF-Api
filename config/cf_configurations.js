@@ -45,6 +45,41 @@ const convertBoolToYesNo = (dim, col) => {
     return dim[col] === undefined ? "Unknown" : dim[col] ? "Yes" : "No";
 };
 
+const convertDateToDayOfTheWeek = (dim, col) => {
+    const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dateData = new Date(dim[col]);
+    const day = weekday[dateData.getDay()];
+    if (day) {
+        return day;
+    } else {
+        return "Unknown";
+    }
+};
+
+const convertDateToMonth = (dim, col) => {
+    const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    const dateData = new Date(dim[col]);
+    const month = months[dateData.getMonth()];
+    if (month) {
+        return month;
+    } else {
+        return "Unknown";
+    }
+};
+
 module.exports.cfConfigurations = [
     {
         name: "covid_populations",
@@ -181,7 +216,8 @@ module.exports.cfConfigurations = [
                 tableCol: "reported_by",
                 function: convertValueOrUnknown,
             },
-            { name: "date", type: "date", functiontype: "dateWithinRange", tableCol: "date" },
+            { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
+            { name: "inquest_date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "inquest_date" },
             { name: "local_authority", type: "location", functiontype: "dataMatches", tableCol: "local_authority" },
             { name: "residence_location", type: "location", functiontype: "postcodeMatches", tableCol: "residence_location" },
             { name: "gender", type: "stringConvert", functiontype: "dataMatches", tableCol: "gender", function: convertValueOrUnknown },
@@ -300,6 +336,27 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "postcode_mosaic",
                 function: convertMosType,
+            },
+            {
+                name: "mh_services_lscft_update",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "mh_services_lscft_update",
+                function: convertValueOrUnknown,
+            },
+            {
+                name: "day_of_the_week",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "date",
+                function: convertDateToDayOfTheWeek,
+            },
+            {
+                name: "month",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "date",
+                function: convertDateToMonth,
             },
         ],
     },
