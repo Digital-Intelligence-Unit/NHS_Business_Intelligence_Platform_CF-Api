@@ -70,10 +70,6 @@ const convertValueOrUnknown = (dim, col) => {
     return dim[col] || "Unknown";
 };
 
-const convertBoolToYesNo = (dim, col) => {
-    return dim[col] === undefined ? "Unknown" : dim[col] ? "Yes" : "No";
-};
-
 const convertDateToDayOfTheWeek = (dim, col) => {
     const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const dateData = new Date(dim[col]);
