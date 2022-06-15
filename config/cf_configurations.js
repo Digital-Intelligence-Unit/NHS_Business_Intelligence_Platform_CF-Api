@@ -25,8 +25,8 @@ const convertCCGtoICS = (value) => {
     }
 };
 
-const capitalizeFirstLetter = (string) => {
-    return string[0].toUpperCase() + string.slice(1);
+const capitalizeFirstLetter = (passedString) => {
+    return passedString[0].toUpperCase() + passedString.slice(1);
 };
 
 const convertStringToYesNo = (dim, col) => {
@@ -89,7 +89,7 @@ const convertValueOrUnknownLancs12 = (dim, col) => {
     if (!dim[col]) {
         return "Unknown";
     } else {
-        if (dim[col].toUpperCase() == "Y") {
+        if (dim[col].toUpperCase() === "Y") {
             return "Yes";
         } else {
             return "No";
