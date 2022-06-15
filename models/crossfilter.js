@@ -569,9 +569,17 @@ const convertDimToChartName = function (dimName) {
 };
 
 const flattenLocation = (location, d) => {
-    if (location === undefined) {
+    if (isEmpty(location)) {
         return "Unknown";
     } else {
-        return location.postcode + "|" + location.latitude + "|" + location.longitude + "|" + d.method + "|" + d.type;
+        const locationData = JSON.parse(location);
+        return locationData.postcode + "|" + locationData.latitude + "|" + locationData.longitude + "|" + d.method + "|" + d.type;
     }
+};
+
+const isEmpty = (colData) => {
+    if (colData === undefined || colData === "" || colData === null || colData === "null") {
+        return true;
+    }
+    return false;
 };
