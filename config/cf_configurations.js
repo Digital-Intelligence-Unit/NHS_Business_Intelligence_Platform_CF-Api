@@ -25,6 +25,35 @@ const convertCCGtoICS = (value) => {
     }
 };
 
+const capitalizeFirstLetter = (passedString) => {
+    return passedString[0].toUpperCase() + passedString.slice(1);
+};
+
+const convertStringToYesNo = (dim, col) => {
+    if (dim[col]) {
+        switch (dim[col].toLowerCase()) {
+            case "yes":
+            case "y":
+            case "true":
+                return "Yes";
+            case "no":
+            case "n":
+            case "false":
+                return "No";
+            default:
+                return dim[col];
+        }
+    }
+    return "Unknown";
+};
+
+const convertValueOrUnknownUppercase = (dim, col) => {
+    if (dim[col]) {
+        return capitalizeFirstLetter(dim[col]);
+    }
+    return "Unknown";
+};
+
 const convertSex = (dim, col) => {
     return dim[col] === "M" ? "Male" : "Female";
 };
@@ -41,10 +70,6 @@ const convertValueOrUnknown = (dim, col) => {
     return dim[col] || "Unknown";
 };
 
-const convertBoolToYesNo = (dim, col) => {
-    return dim[col] === undefined ? "Unknown" : dim[col] ? "Yes" : "No";
-};
-
 const convertDateToDayOfTheWeek = (dim, col) => {
     const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const dateData = new Date(dim[col]);
@@ -54,6 +79,28 @@ const convertDateToDayOfTheWeek = (dim, col) => {
     } else {
         return "Unknown";
     }
+};
+
+const convertValueOrUnknownLancs12 = (dim, col) => {
+    if (!dim[col]) {
+        return "Unknown";
+    } else {
+        if (dim[col].toUpperCase() === "Y") {
+            return "Yes";
+        } else {
+            return "No";
+        }
+    }
+};
+
+const imdDecileToString = (dim, col) => {
+    switch (dim[col]) {
+        case "Not stated":
+        case "N/A":
+        case "?":
+            return "Unknown";
+    }
+    return dim[col].toString() || "Unknown";
 };
 
 const convertDateToMonth = (dim, col) => {
@@ -201,14 +248,20 @@ module.exports.cfConfigurations = [
                 function: convertValueOrUnknown,
             },
             {
-                name: "csp_distict",
+                name: "csp_district",
                 type: "stringConvert",
                 functiontype: "dataMatches",
-                tableCol: "csp_distict",
+                tableCol: "csp_district",
                 function: convertValueOrUnknown,
             },
             { name: "ccg", type: "stringConvert", functiontype: "dataMatches", tableCol: "ccg", function: convertValueOrUnknown },
-            { name: "lancs12", type: "stringConvert", functiontype: "dataMatches", tableCol: "lancs12", function: convertBoolToYesNo },
+            {
+                name: "lancs12",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "lancs12",
+                function: convertValueOrUnknownLancs12,
+            },
             {
                 name: "reported_by",
                 type: "stringConvert",
@@ -218,8 +271,9 @@ module.exports.cfConfigurations = [
             },
             { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
             { name: "inquest_date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "inquest_date" },
-            { name: "local_authority", type: "location", functiontype: "dataMatches", tableCol: "local_authority" },
-            { name: "residence_location", type: "location", functiontype: "postcodeMatches", tableCol: "residence_location" },
+            { name: "local_authority", type: "string", functiontype: "dataMatches", tableCol: "local_authority" },
+            { name: "residence_location", type: "location", functiontype: "postcodeMatches", tableCol: "postcode_data" },
+            { name: "incident_location", type: "location", functiontype: "postcodeMatches", tableCol: "location_postcode_data" },
             { name: "gender", type: "stringConvert", functiontype: "dataMatches", tableCol: "gender", function: convertValueOrUnknown },
             { name: "age", type: "numberSimple", functiontype: "dataWithinRange", tableCol: "age", function: convertValueOrUnknown },
             {
@@ -248,7 +302,7 @@ module.exports.cfConfigurations = [
                 type: "stringConvert",
                 functiontype: "dataMatches",
                 tableCol: "imd_decile",
-                function: convertValueOrUnknown,
+                function: imdDecileToString,
             },
             {
                 name: "bereavement_offered",
@@ -269,7 +323,7 @@ module.exports.cfConfigurations = [
                 type: "stringConvert",
                 functiontype: "dataMatches",
                 tableCol: "rts_accurate",
-                function: convertValueOrUnknown,
+                function: convertValueOrUnknownUppercase,
             },
             { name: "medication", type: "arraySimple", functiontype: "filterContains", tableCol: "medication" },
             {
@@ -300,7 +354,7 @@ module.exports.cfConfigurations = [
                 tableCol: "csp_resident",
                 function: convertValueOrUnknown,
             },
-            { name: "da", type: "stringConvert", functiontype: "dataMatches", tableCol: "da", function: convertValueOrUnknown },
+            { name: "da", type: "stringConvert", functiontype: "dataMatches", tableCol: "da", function: convertStringToYesNo },
             {
                 name: "delphi_update",
                 type: "stringConvert",
@@ -357,6 +411,13 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "date",
                 function: convertDateToMonth,
+            },
+            {
+                name: "type_of_location",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "type_of_location",
+                function: convertValueOrUnknown,
             },
         ],
     },

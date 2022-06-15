@@ -24,6 +24,12 @@ const Changes = require("../models/changes");
  *      - Dataset
  *     produces:
  *      - application/json
+ *     parameters:
+ *       - name: filter
+ *         description: Filter to apply to the Crossfilter
+ *         in: query
+ *         required: false
+ *         type: string
  *     responses:
  *       200:
  *         description: Full List
@@ -34,7 +40,8 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        const filter = req.params["filter"] ? JSON.parse(req.params["filter"]) : {};
+        // @ts-ignore
+        const filter = req.query["filter"] ? JSON.parse(req.query["filter"]) : {};
         NDXfilter(filter, (cf, err) => {
             if (err) {
                 console.error(err);
