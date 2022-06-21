@@ -201,7 +201,7 @@ module.exports.cfConfigurations = [
     },
     {
         name: "population_health_mini",
-        dataQuery: "SELECT age, w, d, sex FROM public.populations;",
+        dataQuery: "SELECT age, w, d, sex FROM public.covid_populations;",
         selectedCounts: [],
         dimensions: [
             { name: "DDimension", type: "string", functiontype: "dataMatches", tableCol: "d" },
