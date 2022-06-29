@@ -42,6 +42,7 @@ router.get(
     (req, res, next) => {
         // @ts-ignore
         const filter = req.query["filter"] ? JSON.parse(req.query["filter"]) : {};
+        console.log(filter);
         NDXfilter(filter, (cf, err) => {
             if (err) {
                 console.error(err);

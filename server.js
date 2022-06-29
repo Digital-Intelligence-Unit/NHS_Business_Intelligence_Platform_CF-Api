@@ -1,7 +1,7 @@
 // @ts-check
 // Self invocation to allow for top-level async
 (async () => {
-    if (process.env.DEV) {
+    if (process.env.DEV || true) {
         require("dotenv").config();
         const { getSecrets } = require("./helpers/awsSecretsManager");
         try {
