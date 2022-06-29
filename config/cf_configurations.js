@@ -63,9 +63,6 @@ const convertMosType = (dim, col) => {
 };
 
 const combineAgeAndSex = (dim, col) => {
-    // console.log(dim);
-    // console.log(col);
-    // console.log((dim.sex + ":" + dim.age).toString());
     return (dim.sex + ":" + dim.age).toString();
 };
 
