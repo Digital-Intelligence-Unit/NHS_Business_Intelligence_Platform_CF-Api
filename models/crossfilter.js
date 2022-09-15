@@ -9,7 +9,7 @@ const filters = {};
 let model;
 let dataset;
 const configurations = require("../config/cf_configurations").cfConfigurations;
-const tablename = process.env.TABLENAME || "population_health_mini";
+const tablename = process.env.TABLENAME || "realtime_surveillance";
 
 module.exports.filterCF = function (filter, callback) {
     callback(getResults(filter), null);
@@ -178,8 +178,6 @@ module.exports.getDataset = function () {
 
 const dataFilterFunction = function (functiontype) {
     switch (functiontype) {
-        case "matches":
-            return dataMatches;
         case "arrayFilterContains":
             return arrayFilterContains;
         case "filterContains":
@@ -194,6 +192,7 @@ const dataFilterFunction = function (functiontype) {
             return dataMatchesFivePlus;
         case "postcodeMatches":
             return postcodeMatches;
+        case "matches":
         default:
             return dataMatches;
     }
@@ -326,17 +325,9 @@ const getResults = function (filter) {
                     }
                     return false;
                 });
-            } else if (dimension === "DDimension" && tablename === "population_health_mini") {
-                thisNDX.dimensions[dimension].filterFunction((d) => {
-                    if (d) {
-                        return thisNDX.filters[dimension](d.toString(), filterObj);
-                    } else {
-                        return thisNDX.filters[dimension](d, filterObj);
-                    }
-                });
             } else {
                 thisNDX.dimensions[dimension].filterFunction((d) => {
-                    thisNDX.filters[dimension](d, filterObj);
+                    return thisNDX.filters[dimension](d, filterObj);
                 });
             }
         } else {

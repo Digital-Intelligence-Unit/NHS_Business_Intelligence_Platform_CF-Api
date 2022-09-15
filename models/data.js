@@ -1,6 +1,6 @@
 // @ts-check
 const pool = require("../config/database").pool;
-const tablename = process.env.TABLENAME || "population_health_mini";
+const tablename = process.env.TABLENAME || "realtime_surveillance";
 const configurations = require("../config/cf_configurations").cfConfigurations;
 let query;
 const AWS = require("../config/database").AWS;

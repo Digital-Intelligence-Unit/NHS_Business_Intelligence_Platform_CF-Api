@@ -98,6 +98,7 @@ const imdDecileToString = (dim, col) => {
         case "Not stated":
         case "N/A":
         case "?":
+        case null:
             return "Unknown";
     }
     return dim[col].toString() || "Unknown";
@@ -125,6 +126,30 @@ const convertDateToMonth = (dim, col) => {
     } else {
         return "Unknown";
     }
+};
+
+const convertDateToYear = (dim, col) => {
+    const dateData = new Date(dim[col]);
+    const year = dateData.getFullYear();
+    return year;
+};
+
+const convertDateToTaxYear = (dim, col) => {
+    const dateData = new Date(dim[col]);
+    const year = dateData.getFullYear();
+    const month = dateData.getMonth();
+    let currentYear = year - 2000;
+    if (month < 4) {
+        currentYear = currentYear - 1;
+    }
+    return currentYear + "/" + (currentYear + 1);
+};
+
+const convertDateAndGender = (dim, col) => {
+    const dateData = new Date(dim[col]);
+    const year = dateData.getFullYear();
+    const gender = dim.gender;
+    return year + " " + gender;
 };
 
 module.exports.cfConfigurations = [
@@ -418,6 +443,27 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "type_of_location",
                 function: convertValueOrUnknown,
+            },
+            {
+                name: "year",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "date",
+                function: convertDateToYear,
+            },
+            {
+                name: "rts_year",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "rts_year",
+                function: convertValueOrUnknown,
+            },
+            {
+                name: "year_gender",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "date",
+                function: convertDateAndGender,
             },
         ],
     },
