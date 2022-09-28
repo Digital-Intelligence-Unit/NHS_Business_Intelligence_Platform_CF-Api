@@ -91,6 +91,7 @@ const imdDecileToString = (dim, col) => {
         case "Not stated":
         case "N/A":
         case "?":
+        case null:
             return "Unknown";
     }
     return dim[col] ? dim[col].toString() : "Unknown";
@@ -114,6 +115,19 @@ const convertDateToMonth = (dim, col) => {
     const dateData = new Date(dim[col]);
     const month = months[dateData.getMonth()];
     return month || "Unknown";
+};
+
+const convertDateToYear = (dim, col) => {
+    const dateData = new Date(dim[col]);
+    const year = dateData.getFullYear();
+    return year;
+};
+
+const convertDateAndGender = (dim, col) => {
+    const dateData = new Date(dim[col]);
+    const year = dateData.getFullYear();
+    const gender = dim.gender;
+    return year + " " + gender;
 };
 
 module.exports.cfConfigurations = [
@@ -407,6 +421,27 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "type_of_location",
                 function: convertValueOrUnknown,
+            },
+            {
+                name: "year",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "date",
+                function: convertDateToYear,
+            },
+            {
+                name: "rts_year",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "rts_year",
+                function: convertValueOrUnknown,
+            },
+            {
+                name: "year_gender",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "date",
+                function: convertDateAndGender,
             },
         ],
     },

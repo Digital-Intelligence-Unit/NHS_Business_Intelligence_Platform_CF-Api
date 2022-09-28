@@ -178,8 +178,6 @@ module.exports.getDataset = function () {
 
 const dataFilterFunction = function (functiontype) {
     switch (functiontype) {
-        case "matches":
-            return dataMatches;
         case "arrayFilterContains":
             return arrayFilterContains;
         case "filterContains":
@@ -194,6 +192,7 @@ const dataFilterFunction = function (functiontype) {
             return dataMatchesFivePlus;
         case "postcodeMatches":
             return postcodeMatches;
+        case "matches":
         default:
             return dataMatches;
     }
@@ -327,7 +326,9 @@ const getResults = function (filter) {
                     return false;
                 });
             } else {
-                thisNDX.dimensions[dimension].filterFunction((d) => thisNDX.filters[dimension](d, filterObj));
+                thisNDX.dimensions[dimension].filterFunction((d) => {
+                    return thisNDX.filters[dimension](d, filterObj);
+                });
             }
         } else {
             thisNDX.dimensions[dimension].filter(null);

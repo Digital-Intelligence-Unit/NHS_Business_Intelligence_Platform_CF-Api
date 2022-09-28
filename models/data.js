@@ -24,7 +24,7 @@ module.exports.getAll = function (callback) {
         });
     } else {
         if (config[0].type && config[0].type === "dynamodb") {
-            dynamodbgetAll(config[0].dataQuery, (error, results) => {
+            dynamodbgetAll(config[0].dataQuery, null, null, (error, results) => {
                 if (error) {
                     console.log("Error: " + error);
                 } else {
@@ -54,9 +54,28 @@ module.exports.getAll = function (callback) {
     }
 };
 
-const dynamodbgetAll = function (name, callback) {
+const dynamodbgetAll = function (tableName, previousresults, LastEvaluatedKey, callback) {
     const params = {
-        TableName: name,
+        TableName: tableName,
     };
-    docClient.scan(params, callback);
+    if (LastEvaluatedKey) {
+        params.ExclusiveStartKey = LastEvaluatedKey;
+    }
+    let output = previousresults || { Items: [], Count: 0, ScannedCount: 0 };
+    docClient.scan(params, (err, result) => {
+        if (err) callback(err, null);
+        else {
+            output = {
+                Items: output.Items.concat(result.Items),
+                Count: output.Count + result.Count,
+                ScannedCount: output.ScannedCount + result.ScannedCount,
+            };
+
+            if (typeof result.LastEvaluatedKey !== "undefined") {
+                dynamodbgetAll(tableName, output, result.LastEvaluatedKey, callback);
+            } else {
+                callback(null, output);
+            }
+        }
+    });
 };
