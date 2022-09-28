@@ -48,10 +48,7 @@ const convertStringToYesNo = (dim, col) => {
 };
 
 const convertValueOrUnknownUppercase = (dim, col) => {
-    if (dim[col]) {
-        return capitalizeFirstLetter(dim[col]);
-    }
-    return "Unknown";
+    return dim[col] ? capitalizeFirstLetter(dim[col]) : "Unknown";
 };
 
 const convertSex = (dim, col) => {
@@ -74,11 +71,7 @@ const convertDateToDayOfTheWeek = (dim, col) => {
     const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const dateData = new Date(dim[col]);
     const day = weekday[dateData.getDay()];
-    if (day) {
-        return day;
-    } else {
-        return "Unknown";
-    }
+    return day || "Unknown";
 };
 
 const convertValueOrUnknownLancs12 = (dim, col) => {
@@ -101,7 +94,7 @@ const imdDecileToString = (dim, col) => {
         case null:
             return "Unknown";
     }
-    return dim[col].toString() || "Unknown";
+    return dim[col] ? dim[col].toString() : "Unknown";
 };
 
 const convertDateToMonth = (dim, col) => {
@@ -121,11 +114,7 @@ const convertDateToMonth = (dim, col) => {
     ];
     const dateData = new Date(dim[col]);
     const month = months[dateData.getMonth()];
-    if (month) {
-        return month;
-    } else {
-        return "Unknown";
-    }
+    return month || "Unknown";
 };
 
 const convertDateToYear = (dim, col) => {
