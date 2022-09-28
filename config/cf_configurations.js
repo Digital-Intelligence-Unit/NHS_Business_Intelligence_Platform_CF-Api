@@ -123,17 +123,6 @@ const convertDateToYear = (dim, col) => {
     return year;
 };
 
-const convertDateToTaxYear = (dim, col) => {
-    const dateData = new Date(dim[col]);
-    const year = dateData.getFullYear();
-    const month = dateData.getMonth();
-    let currentYear = year - 2000;
-    if (month < 4) {
-        currentYear = currentYear - 1;
-    }
-    return currentYear + "/" + (currentYear + 1);
-};
-
 const convertDateAndGender = (dim, col) => {
     const dateData = new Date(dim[col]);
     const year = dateData.getFullYear();
