@@ -8,6 +8,7 @@ const dimensions = {};
 const filters = {};
 let model;
 let dataset;
+const FilterFunctions = require("../lib/filters");
 const configurations = require("../config/cf_configurations").cfConfigurations;
 const tablename = process.env.TABLENAME || "realtime_surveillance";
 
@@ -123,7 +124,7 @@ module.exports.buildCrossfilter = function (callback) {
                     case "array":
                         dimensions[dim.name] = model.dimension((d) => {
                             return d[dim.tableCol][dim.tableColArr || dim.tableCol];
-                        }, true);
+                        }, !dim.name.includes("2Dimension"));
                         break;
                     case "arraySimple":
                         dimensions[dim.name] = model.dimension((d) => {
@@ -145,7 +146,7 @@ module.exports.buildCrossfilter = function (callback) {
                 }
                 if (dim.groupFloor) groups[dim.name] = dimensions[dim.name].group((g) => Math.floor(g));
                 else groups[dim.name] = dimensions[dim.name].group();
-                filters[dim.name] = dataFilterFunction(dim.functiontype);
+                filters[dim.name] = FilterFunctions[dim.functiontype];
             });
             console.log("Full Crossfilter Populated");
         }
@@ -176,118 +177,6 @@ module.exports.getDataset = function () {
     return dataset;
 };
 
-const dataFilterFunction = function (functiontype) {
-    switch (functiontype) {
-        case "arrayFilterContains":
-            return arrayFilterContains;
-        case "filterContains":
-            return filterContains;
-        case "dataWithinRange":
-            return dataWithinRange;
-        case "dataWithinRangeDate":
-            return dataWithinRangeDate;
-        case "agebandMatch":
-            return agebandMatch;
-        case "dataMatchesFivePlus":
-            return dataMatchesFivePlus;
-        case "postcodeMatches":
-            return postcodeMatches;
-        case "matches":
-        default:
-            return dataMatches;
-    }
-};
-
-const postcodeMatches = function (items, filter) {
-    let flag = false;
-    items.forEach((datum) => {
-        if (datum !== "Unknown") {
-            if (filter.includes(datum.split("|")[0])) {
-                flag = true;
-            }
-        }
-    });
-    return flag;
-};
-
-const dataMatches = function (items, filter) {
-    return filter.includes(items);
-};
-
-const filterContains = function (items, filter) {
-    let flag = false;
-    if (Array.isArray(items)) {
-        items.forEach((filt) => {
-            if (filter[0].includes(filt)) {
-                flag = true;
-            }
-        });
-    } else {
-        if (items.includes(filter)) {
-            flag = true;
-        }
-    }
-    return flag;
-};
-
-const arrayFilterContains = function (items, filter) {
-    let flag = false;
-    filter.forEach((filt) => {
-        if (items[0] === filt[0] && items[1] === filt[1]) {
-            flag = true;
-        }
-    });
-    return flag;
-};
-
-const dataMatchesFivePlus = function (items, filter) {
-    filter.forEach((elem) => {
-        if (elem.toString().includes("5")) {
-            filter.splice(filter.indexOf(elem), 1, "5");
-        }
-    });
-    if (items.includes("5")) {
-        items = "5";
-    }
-    return filter.includes(items);
-};
-
-const dataWithinRange = function (items, filter) {
-    let flag = false;
-    if (filter.length < 2) {
-        filter = filter[0];
-    }
-    const valA = parseInt(filter[0]);
-    const valB = parseInt(filter[1]);
-    if (items >= valA && items <= valB) flag = true;
-    return flag;
-};
-
-// @ts-ignore
-const dataWithinRangeDate = function (items, filter) {
-    let flag = false;
-    if (filter.length < 2) {
-        filter = filter[0];
-    }
-    const valA = new Date(filter[0].substr(0, 10));
-    const valB = new Date(filter[1].substr(0, 10));
-    if (new Date(items) >= valA && new Date(items) <= valB) flag = true;
-    return flag;
-};
-
-const agebandMatch = function (item, filter) {
-    let flag = false;
-    filter.forEach((elem) => {
-        if (elem[0].toString() === item[0].toString() && elem[1] && item[1] && normalise(elem[1]) === normalise(item[1])) flag = true;
-    });
-
-    return flag;
-};
-
-function normalise(original) {
-    return original.replace(/\D/g, "");
-}
-
 const getResults = function (filter) {
     const results = {};
     const thisNDX = new ndx.NDX();
@@ -306,15 +195,7 @@ const getResults = function (filter) {
         const group = thisNDX.groups[dimension];
         if (filter[dimension]) {
             let filterObj = filter[dimension];
-            if (dimension === "LTCs2Dimension") {
-                const filts = [];
-                filterObj.forEach((x) => filts.push(x[0]));
-                thisNDX.dimensions.LTCsDimension.filterFunction((d) => thisNDX.filters.LTCsDimension(d, filts));
-            } else if (dimension === "Flags2Dimension") {
-                const filts = [];
-                filterObj.forEach((x) => filts.push(x[0]));
-                thisNDX.dimensions.Flags2Dimension.filterFunction((d) => thisNDX.filters.Flags2Dimension(d, filts));
-            } else if (dimension === "AgeDimension" && tablename === "population_health_mini") {
+            if (dimension === "AgeDimension" && tablename === "population_health_mini") {
                 filterObj = filter[dimension][0];
                 const lower = parseInt(filterObj.split("-")[0].trim());
                 const upper = parseInt(filterObj.split("-")[1].trim());
@@ -403,7 +284,6 @@ const getData = function (filter, group) {
             let lastCutoffNo = 0;
             let filteredCutoffs;
             let cutoffNo;
-
             switch (dimensionName) {
                 case "LTCsDimension":
                     initialData = JSON.parse(JSON.stringify(group["LTCs2Dimension"]["values"]));
