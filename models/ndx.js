@@ -42,7 +42,7 @@ module.exports.NDX = class NDX {
             counters.forEach((option) => {
                 const filts = [];
                 const arr = filter[option.fieldtoCount];
-                if (arr && arr.length > 0) arr.forEach((x) => filts.push(x[0]));
+                if (arr && arr.length > 0) arr.forEach((x) => filts.push(x));
                 const relatedDim = config.dimensions.find((x) => x.name === option.fieldtoCount);
                 allFilts.push({ filters: filts, dimension: option, relatedDim });
             });
@@ -54,9 +54,10 @@ module.exports.NDX = class NDX {
 
                     const tableCol = filt.relatedDim.tableCol;
                     const tableColArr = filt.relatedDim.tableColArr;
-
                     filt.filters.forEach((f) => {
-                        if (item[tableCol][tableColArr].indexOf(f) >= 0) item[filt.dimension.tableCol] += 1;
+                        if (item[tableCol][tableColArr].indexOf(f) >= 0) {
+                            item[filt.dimension.tableCol] += 1;
+                        }
                     });
                 });
             });
