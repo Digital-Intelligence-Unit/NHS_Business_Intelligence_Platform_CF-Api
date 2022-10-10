@@ -138,8 +138,8 @@ module.exports.cfConfigurations = [
         dimensions: [
             { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
             { name: "GPDimension", type: "string", functiontype: "dataMatches", tableCol: "gp" },
-            { name: "LTCsDimension", type: "array", functiontype: "arrayFilterContains", tableCol: "ltcs", tableColArr: "LTCs" },
-            { name: "LTCs2Dimension", type: "array", functiontype: "arrayFilterContains", tableCol: "ltcs", tableColArr: "LTCs" },
+            { name: "LTCsDimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
+            { name: "LTCs2Dimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
             { name: "CCGDimension", type: "string", functiontype: "dataMatches", tableCol: "ccg" },
             { name: "SexDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "sex", function: convertSex },
             { name: "MDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "m", function: convertMosType },
@@ -168,7 +168,7 @@ module.exports.cfConfigurations = [
                 fieldtoCount: "Flags2Dimension",
             },
             { name: "FCntDimension", type: "string", functiontype: "dataMatchesFivePlus", tableCol: "fcnt" },
-            { name: "MatrixDimension", type: "dualArray", functiontype: "arrayFilterContains", tableCol: "cr,cv" },
+            { name: "MatrixDimension", type: "dualArray", functiontype: "matrixFilter", tableCol: "cr,cv" },
         ],
     },
     {
