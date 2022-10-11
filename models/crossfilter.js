@@ -28,7 +28,7 @@ module.exports.compareCF = function (filterA, filterB, callback) {
         const allChartItems = [];
         if (chartName !== "NOTUSED") {
             Object.keys(baselineChartData).forEach(function (indbaseline) {
-                const BaselineSpecItem = baselineChartData[ind];
+                const BaselineSpecItem = baselineChartData[indbaseline];
                 // finalCompareTable[chartName];
                 compTableItem = {
                     chart: chartName,
