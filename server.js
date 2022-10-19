@@ -14,7 +14,6 @@
             process.env.JWT_SECRETKEY = jwtCredentials.secretkey;
             process.env.AWS_SECRETID = awsCredentials.secretid;
             process.env.AWS_SECRETKEY = awsCredentials.secretkey;
-            process.env.TABLENAME = "covid_populations";
         } catch (error) {
             console.error(error);
         }

@@ -204,12 +204,47 @@ module.exports.cfConfigurations = [
     },
     {
         name: "population_health_mini",
-        dataQuery: "SELECT age, w, d, sex FROM public.covid_populations;",
+        dataQuery: `with initial_table as (
+            SELECT gh1.code as c1, gh1.area as a1, gh1.parent_code as pc1, gh1.parent as pa1,  
+               gh2.code as c2, gh2.area as a2, gh2.parent_code as pc2, gh2.parent as pa2,
+               gh3.code as c3, gh3.area as a3, gh3.parent_code as pc3, gh3.parent as pa3
+            FROM public.geography_hierarchy gh1
+            LEFT JOIN public.geography_hierarchy gh2 ON gh1.parent_code = gh2.code
+            LEFT JOIN public.geography_hierarchy gh3 ON gh2.parent_code = gh3.code
+        ),
+        union_table as (
+            SELECT c1 as code, a1 as area, pc1 as parent_code, pa1 as parent_area
+            FROM initial_table
+            WHERE pc1 IS NOT NULL
+           UNION ALL        
+           SELECT c1 as code, a1 as area, pc2 as parent_code, pa2 as parent_area
+            FROM initial_table
+            WHERE pc2 IS NOT NULL
+           UNION ALL
+           SELECT c1 as code, a1 as area, pc3 as parent_code, pa3 as parent_area
+            FROM initial_table
+            WHERE pc3 IS NOT NULL
+        ),
+        json_lookup as (
+            SELECT code, json_build_object('areas', jsonb_agg(parent_code)) as all_areas_lookup  
+            FROM union_table
+            GROUP BY code
+        )
+        SELECT age, w, d, sex, all_areas_lookup as lu
+            FROM public.covid_populations cpop
+            INNER JOIN json_lookup jlu ON cpop.w = jlu.code`,
         selectedCounts: [],
         dimensions: [
             { name: "DDimension", type: "string", functiontype: "dataMatches", tableCol: "d" },
             { name: "AgeDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "age", function: combineAgeAndSex },
             { name: "WDimension", type: "string", functiontype: "dataMatches", tableCol: "w" },
+            {
+                name: "AreaLookup",
+                type: "array",
+                functiontype: "filterContains",
+                tableCol: "lu",
+                tableColArr: "areas",
+            },
         ],
     },
     {
