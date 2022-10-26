@@ -60,7 +60,7 @@ const convertMosType = (dim, col) => {
 };
 
 const combineAgeAndSex = (dim, col) => {
-    return (dim.sex + ":" + dim.age).toString();
+    return (dim.sex + ":" + dim.ageband).toString();
 };
 
 const convertValueOrUnknown = (dim, col) => {
@@ -205,7 +205,7 @@ module.exports.cfConfigurations = [
     {
         name: "population_health_mini",
         dataQuery: `with initial_table as (
-            SELECT gh1.code as c1, gh1.area as a1, gh1.parent_code as pc1, gh1.parent as pa1,  
+            SELECT gh1.code as c1, gh1.area as a1, gh1.parent_code as pc1, gh1.parent as pa1, 
                gh2.code as c2, gh2.area as a2, gh2.parent_code as pc2, gh2.parent as pa2,
                gh3.code as c3, gh3.area as a3, gh3.parent_code as pc3, gh3.parent as pa3
             FROM public.geography_hierarchy gh1
@@ -216,7 +216,7 @@ module.exports.cfConfigurations = [
             SELECT c1 as code, a1 as area, pc1 as parent_code, pa1 as parent_area
             FROM initial_table
             WHERE pc1 IS NOT NULL
-           UNION ALL        
+           UNION ALL       
            SELECT c1 as code, a1 as area, pc2 as parent_code, pa2 as parent_area
             FROM initial_table
             WHERE pc2 IS NOT NULL
@@ -226,13 +226,18 @@ module.exports.cfConfigurations = [
             WHERE pc3 IS NOT NULL
         ),
         json_lookup as (
-            SELECT code, json_build_object('areas', jsonb_agg(parent_code)) as all_areas_lookup  
+            SELECT code, json_build_object('areas', jsonb_agg(parent_code)) as all_areas_lookup 
             FROM union_table
             GROUP BY code
-        )
-        SELECT age, w, d, sex, all_areas_lookup as lu
+        ),
+        agg_output as (
+            SELECT CONCAT(floor(age/5) * 5, ' - ', floor(age/5) * 5 + 4) ageband, w, d, sex, count(*) as num
             FROM public.covid_populations cpop
-            INNER JOIN json_lookup jlu ON cpop.w = jlu.code`,
+            GROUP BY age, w, d, sex                             
+        )
+        SELECT ageband, w, d, sex, num, all_areas_lookup as lu
+        FROM agg_output cpop
+        INNER JOIN json_lookup jlu ON cpop.w = jlu.code`,
         selectedCounts: [],
         dimensions: [
             { name: "DDimension", type: "string", functiontype: "dataMatches", tableCol: "d" },
