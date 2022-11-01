@@ -10,7 +10,7 @@ let model;
 let dataset;
 const FilterFunctions = require("../lib/filters");
 const configurations = require("../config/cf_configurations").cfConfigurations;
-const tablename = process.env.TABLENAME || "realtime_surveillance";
+const tablename = process.env.TABLENAME || "population_health_mini";
 
 module.exports.filterCF = function (filter, callback) {
     callback(getResults(filter), null);
@@ -145,7 +145,15 @@ module.exports.buildCrossfilter = function (callback) {
                         break;
                 }
                 if (dim.groupFloor) groups[dim.name] = dimensions[dim.name].group((g) => Math.floor(g));
-                else groups[dim.name] = dimensions[dim.name].group();
+                else {
+                    if (tablename === "population_health_mini") {
+                        groups[dim.name] = dimensions[dim.name].group().reduceSum((d) => {
+                            return d.num;
+                        });
+                    } else {
+                        groups[dim.name] = dimensions[dim.name].group();
+                    }
+                }
                 filters[dim.name] = FilterFunctions[dim.functiontype];
             });
             console.log("Full Crossfilter Populated");
