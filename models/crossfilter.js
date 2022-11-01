@@ -146,9 +146,13 @@ module.exports.buildCrossfilter = function (callback) {
                 }
                 if (dim.groupFloor) groups[dim.name] = dimensions[dim.name].group((g) => Math.floor(g));
                 else {
-                    groups[dim.name] = dimensions[dim.name].group().reduceSum((d) => {
-                        return d.num;
-                    });
+                    if (tablename === "population_health_mini") {
+                        groups[dim.name] = dimensions[dim.name].group().reduceSum((d) => {
+                            return d.num;
+                        });
+                    } else {
+                        groups[dim.name] = dimensions[dim.name].group();
+                    }
                 }
                 filters[dim.name] = FilterFunctions[dim.functiontype];
             });
