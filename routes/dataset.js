@@ -74,7 +74,7 @@ router.get(
 router.get(
     "/rebuildCrossfilter",
     (req, res, next) => {
-        if (req.headers.authorization && req.headers.authorization.substring(0, 3) === "JWT") {
+        if (req.headers && req.headers.authorization && req.headers.authorization.substring(0, 3) === "JWT") {
             passport.authenticate("jwt", {
                 session: false,
             })(req, res, next);
