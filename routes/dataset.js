@@ -5,6 +5,9 @@ const passport = require("passport");
 const NDXfilter = require("../models/crossfilter").filterCF;
 const CF = require("../models/crossfilter");
 const Changes = require("../models/changes");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
+const credentials = require("../_credentials/credentials");
 
 /**
  * @swagger
@@ -70,9 +73,15 @@ router.get(
  */
 router.get(
     "/rebuildCrossfilter",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    (req, res, next) => {
+        if (req.headers && req.headers.authorization && req.headers.authorization.substring(0, 3) === "JWT") {
+            passport.authenticate("jwt", {
+                session: false,
+            })(req, res, next);
+        } else {
+            MiddlewareHelper.authenticateWithKey(credentials.api_key)(req, res, next);
+        }
+    },
     (req, res, next) => {
         CF.buildCrossfilter((err, result) => {
             if (err) {

@@ -12,6 +12,7 @@ const morgan = require("morgan");
 const winston = require("winston");
 const CloudWatchTransport = require("winston-aws-cloudwatch");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 
 // SWAGGER SETUP
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -45,6 +46,17 @@ morgan.token("token", function (req) {
         return "{}";
     }
 });
+
+let limitOfRates = 50;
+if (process.env.DEV) {
+    limitOfRates = 1000;
+}
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: limitOfRates,
+});
+app.use(limiter);
+
 const apiname = process.env.API_NAME || "API";
 const addAppNameFormat = winston.format((info) => {
     info.appName = apiname;

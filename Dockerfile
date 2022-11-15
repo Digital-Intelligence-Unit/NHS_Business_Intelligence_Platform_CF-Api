@@ -22,6 +22,8 @@ ARG SITE_URL
 ENV SITE_URL ${SITE_URL}
 ARG TABLENAME
 ENV TABLENAME ${TABLENAME}
+ARG API_KEY
+ENV API_KEY ${API_KEY}
 ENV API_NAME=api-cfserver, AWSREGION=eu-west-2
 WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
