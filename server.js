@@ -9,7 +9,6 @@
             const jwtCredentials = JSON.parse(await getSecrets("jwt"));
             const awsCredentials = JSON.parse(await getSecrets("awsdev"));
             const apiKey = JSON.parse(await getSecrets("generic-api-key"));
-            console.log(apiKey);
             process.env.POSTGRES_UN = postgresCredentials.username;
             process.env.POSTGRES_PW = postgresCredentials.password;
             process.env.JWT_SECRET = jwtCredentials.secret;
