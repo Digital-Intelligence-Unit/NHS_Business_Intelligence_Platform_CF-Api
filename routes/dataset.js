@@ -124,7 +124,7 @@ router.get(
  *                    type: string
  *                  cohortName:
  *                    type: string
- *                  cohorturl:
+ *                  data:
  *                    type: string
  *                  createdDT:
  *                    type: string
@@ -135,7 +135,7 @@ router.get(
  *                    type: string
  *                  cohortName:
  *                    type: string
- *                  cohorturl:
+ *                  data:
  *                    type: string
  *                  createdDT:
  *                    type: string
@@ -154,9 +154,9 @@ router.post(
     (req, res, next) => {
         const cohortBaselineFilter = req.body.cohorta;
         const cohortComparatorFilter = req.body.cohortb;
-        if (cohortBaselineFilter.cohorturl && cohortComparatorFilter.cohorturl) {
-            const a = JSON.parse(cohortBaselineFilter.cohorturl);
-            const b = JSON.parse(cohortComparatorFilter.cohorturl);
+        if (cohortBaselineFilter.data && cohortComparatorFilter.data) {
+            const a = JSON.parse(cohortBaselineFilter.data);
+            const b = JSON.parse(cohortComparatorFilter.data);
             CF.compareCF(a, b, function (cf, baseline, comp, err) {
                 if (err) {
                     console.error(err);
