@@ -133,7 +133,7 @@ const convertDateAndGender = (dim, col) => {
 module.exports.cfConfigurations = [
     {
         name: "covid_populations",
-        dataQuery: "SELECT ccg, age, sex, rsk, w, m, d, l, gp, cr, cv, la, du, lcnt, fcnt, ltcs, flags FROM public.covid_populations_tmp",
+        dataQuery: "SELECT ccg, age, sex, rsk, w, m, d, l, gp, cr, cv, la, du, lcnt, fcnt, ltcs, flags FROM public.covid_populations",
         selectedCounts: ["NoSelectedLtcs", "NoSelectedFlags"],
         dimensions: [
             { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
