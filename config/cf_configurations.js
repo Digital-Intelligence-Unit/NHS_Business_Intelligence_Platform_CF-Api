@@ -133,17 +133,18 @@ const convertDateAndGender = (dim, col) => {
 module.exports.cfConfigurations = [
     {
         name: "covid_populations",
-        dataQuery: "SELECT ccg, age, sex, rsk, w, m, d, l, gp, lcnt, fcnt, ltcs, flags, cr, cv FROM covid_populations;",
+        dataQuery: "SELECT ccg, age, sex, rsk, w, m, d, l, gp, cr, cv, la, du, lcnt, fcnt, ltcs, flags FROM public.covid_populations;",
         selectedCounts: ["NoSelectedLtcs", "NoSelectedFlags"],
         dimensions: [
             { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
             { name: "GPDimension", type: "string", functiontype: "dataMatches", tableCol: "gp" },
             { name: "LTCsDimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
             { name: "LTCs2Dimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
-            { name: "CCGDimension", type: "string", functiontype: "dataMatches", tableCol: "ccg" },
+            { name: "LADimension", type: "string", functiontype: "dataMatches", tableCol: "la" },
             { name: "SexDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "sex", function: convertSex },
             { name: "MDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "m", function: convertMosType },
-            { name: "ICPDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "ccg", function: convertCCGtoICS },
+            { name: "CCGDimension", type: "string", functiontype: "dataMatches", tableCol: "ccg" },
+            { name: "DUDimension", type: "string", functiontype: "dataMatches", tableCol: "du" },
             { name: "LCntDimension", type: "string", functiontype: "dataMatchesFivePlus", tableCol: "lcnt" },
             { name: "AgeDimension", type: "string", functiontype: "dataWithinRange", tableCol: "age", groupFloor: true },
             { name: "RskDimension", type: "string", functiontype: "dataWithinRange", tableCol: "rsk", groupFloor: true },
