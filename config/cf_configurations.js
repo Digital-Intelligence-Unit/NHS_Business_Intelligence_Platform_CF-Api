@@ -133,7 +133,8 @@ const convertDateAndGender = (dim, col) => {
 module.exports.cfConfigurations = [
     {
         name: "covid_populations",
-        dataQuery: "SELECT ccg, age, sex, rsk, w, m, d, l, gp, cr, cv, la, du, lcnt, fcnt, ltcs, flags FROM public.covid_populations;",
+        dataQuery: `SELECT ccg, age, sex, a, tc, hi, rsk, w, m, d, l, gp, cr, cv, la, du, lcnt, fcnt, ltcs, flags 
+        FROM public.covid_populations;`,
         selectedCounts: ["NoSelectedLtcs", "NoSelectedFlags"],
         dimensions: [
             { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
@@ -143,12 +144,15 @@ module.exports.cfConfigurations = [
             { name: "LADimension", type: "string", functiontype: "dataMatches", tableCol: "la" },
             { name: "SexDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "sex", function: convertSex },
             { name: "MDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "m", function: convertMosType },
+            { name: "ADimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "a", function: convertMosType },
             { name: "CCGDimension", type: "string", functiontype: "dataMatches", tableCol: "ccg" },
             { name: "DUDimension", type: "string", functiontype: "dataMatches", tableCol: "du" },
             { name: "LCntDimension", type: "string", functiontype: "dataMatchesFivePlus", tableCol: "lcnt" },
             { name: "AgeDimension", type: "string", functiontype: "dataWithinRange", tableCol: "age", groupFloor: true },
             { name: "RskDimension", type: "string", functiontype: "dataWithinRange", tableCol: "rsk", groupFloor: true },
             { name: "DDimension", type: "string", functiontype: "dataMatches", tableCol: "d" },
+            { name: "HIDimension", type: "string", functiontype: "dataMatches", tableCol: "hi" },
+            { name: "TCDimension", type: "string", functiontype: "dataMatches", tableCol: "tc" },
             { name: "WDimension", type: "string", functiontype: "dataMatches", tableCol: "w" },
             {
                 countDim: true,
