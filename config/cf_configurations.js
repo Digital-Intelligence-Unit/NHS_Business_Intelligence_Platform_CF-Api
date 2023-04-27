@@ -284,7 +284,7 @@ module.exports.cfConfigurations = [
         dataQuery: "suicidepreventionindex",
         selectedCounts: [],
         dimensions: [
-            { name: "ics", type: "string", functiontype: "dataMatches", tableCol: "ics" },
+            { name: "ics", type: "stringConvert", functiontype: "dataMatches", tableCol: "ics", function: convertValueOrUnknown },
             { name: "type", type: "stringConvert", functiontype: "dataMatches", tableCol: "type", function: convertValueOrUnknown },
             { name: "method", type: "stringConvert", functiontype: "dataMatches", tableCol: "method", function: convertValueOrUnknown },
             { name: "bcu", type: "stringConvert", functiontype: "dataMatches", tableCol: "bcu", function: convertValueOrUnknown },
