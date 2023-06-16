@@ -33,6 +33,11 @@ const credentials = require("../_credentials/credentials");
  *         in: query
  *         required: false
  *         type: string
+ *       - name: excludeFilter
+ *         description: Filter to exclude from the Crossfilter
+ *         in: query
+ *         required: false
+ *         type: string
  *     responses:
  *       200:
  *         description: Full List
@@ -45,7 +50,8 @@ router.get(
     (req, res, next) => {
         // @ts-ignore
         const filter = req.query["filter"] ? JSON.parse(req.query["filter"]) : {};
-        NDXfilter(filter, (cf, err) => {
+        const excludeFilter = req.query["excludeFilter"] ? JSON.parse(req.query["excludeFilter"]) : {};
+        NDXfilter(filter, excludeFilter, (cf, err) => {
             if (err) {
                 console.error(err);
                 res.status(500).send(err);
