@@ -185,7 +185,7 @@ module.exports.getDataset = function () {
     return dataset;
 };
 
-const getResults = function (filter, excludeFilter) {
+const getResults = function (filter = {}, excludeFilter = {}) {
     const results = {};
     const thisNDX = new ndx.NDX();
     thisNDX.init();
