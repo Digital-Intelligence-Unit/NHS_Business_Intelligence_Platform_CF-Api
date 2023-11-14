@@ -85,6 +85,18 @@ const convertValueOrUnknownLancs12 = (dim, col) => {
     }
 };
 
+const convertValueOrUnknownType = (dim, col) => {
+    if (!dim[col]) {
+        return "Unknown";
+    } else {
+        if (dim[col].toLowerCase() === "drug related") {
+            return "Drug related";
+        } else {
+            return "Suicide";
+        }
+    }
+};
+
 const imdDecileToString = (dim, col) => {
     switch (dim[col]) {
         case "Not stated":
@@ -285,7 +297,7 @@ module.exports.cfConfigurations = [
         selectedCounts: [],
         dimensions: [
             { name: "ics", type: "stringConvert", functiontype: "dataMatches", tableCol: "ics", function: convertValueOrUnknown },
-            { name: "type", type: "stringConvert", functiontype: "dataMatches", tableCol: "type", function: convertValueOrUnknown },
+            { name: "type", type: "stringConvert", functiontype: "dataMatches", tableCol: "type", function: convertValueOrUnknownType },
             { name: "method", type: "stringConvert", functiontype: "dataMatches", tableCol: "method", function: convertValueOrUnknown },
             { name: "bcu", type: "stringConvert", functiontype: "dataMatches", tableCol: "bcu", function: convertValueOrUnknown },
             {
@@ -307,7 +319,7 @@ module.exports.cfConfigurations = [
                 name: "lancs12",
                 type: "stringConvert",
                 functiontype: "dataMatches",
-                tableCol: "lancs12",
+                tableCol: "lancs_12",
                 function: convertValueOrUnknownLancs12,
             },
             {
