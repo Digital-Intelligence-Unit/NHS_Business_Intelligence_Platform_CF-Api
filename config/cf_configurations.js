@@ -1,5 +1,4 @@
 // @ts-check
-
 const convertCCGtoICS = (value) => {
     switch (value) {
         case "02M":
@@ -347,6 +346,13 @@ module.exports.cfConfigurations = [
                 function: convertValueOrUnknown,
             },
             {
+                name: "ethnicity",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "ethnicity",
+                function: convertValueOrUnknown,
+            },
+            {
                 name: "imd_decile",
                 type: "stringConvert",
                 functiontype: "dataMatches",
@@ -488,7 +494,7 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "rts_year",
                 function: convertValueOrUnknown,
-            },
+            }
         ],
     },
 ];
