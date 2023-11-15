@@ -1,5 +1,4 @@
 // @ts-check
-
 const convertCCGtoICS = (value) => {
     switch (value) {
         case "02M":
@@ -82,6 +81,18 @@ const convertValueOrUnknownLancs12 = (dim, col) => {
             return "Yes";
         } else {
             return "No";
+        }
+    }
+};
+
+const convertValueOrUnknownType = (dim, col) => {
+    if (!dim[col]) {
+        return "Unknown";
+    } else {
+        if (dim[col].toLowerCase() === "drug related") {
+            return "Drug related";
+        } else {
+            return "Suicide";
         }
     }
 };
@@ -286,7 +297,7 @@ module.exports.cfConfigurations = [
         selectedCounts: [],
         dimensions: [
             { name: "ics", type: "stringConvert", functiontype: "dataMatches", tableCol: "ics", function: convertValueOrUnknown },
-            { name: "type", type: "stringConvert", functiontype: "dataMatches", tableCol: "type", function: convertValueOrUnknown },
+            { name: "type", type: "stringConvert", functiontype: "dataMatches", tableCol: "type", function: convertValueOrUnknownType },
             { name: "method", type: "stringConvert", functiontype: "dataMatches", tableCol: "method", function: convertValueOrUnknown },
             { name: "bcu", type: "stringConvert", functiontype: "dataMatches", tableCol: "bcu", function: convertValueOrUnknown },
             {
@@ -308,7 +319,7 @@ module.exports.cfConfigurations = [
                 name: "lancs12",
                 type: "stringConvert",
                 functiontype: "dataMatches",
-                tableCol: "lancs12",
+                tableCol: "lancs_12",
                 function: convertValueOrUnknownLancs12,
             },
             {
@@ -344,6 +355,13 @@ module.exports.cfConfigurations = [
                 type: "stringConvert",
                 functiontype: "dataMatches",
                 tableCol: "employment",
+                function: convertValueOrUnknown,
+            },
+            {
+                name: "ethnicity",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "ethnicity",
                 function: convertValueOrUnknown,
             },
             {
@@ -488,7 +506,7 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "rts_year",
                 function: convertValueOrUnknown,
-            },
+            }
         ],
     },
 ];
