@@ -331,13 +331,7 @@ module.exports.cfConfigurations = [
             },
             { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
             { name: "inquest_date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "inquest_date" },
-            {
-                name: "local_authority",
-                type: "string",
-                functiontype: "dataMatches",
-                tableCol: "local_authority",
-                function: convertValueOrUnknown
-            },
+            { name: "local_authority", type: "stringConvert", functiontype: "dataMatches", tableCol: "local_authority" },
             { name: "residence_location", type: "location", functiontype: "postcodeMatches", tableCol: "postcode_data" },
             { name: "incident_location", type: "location", functiontype: "postcodeMatches", tableCol: "location_postcode_data" },
             { name: "gender", type: "stringConvert", functiontype: "dataMatches", tableCol: "gender", function: convertValueOrUnknown },
