@@ -364,13 +364,6 @@ module.exports.cfConfigurations = [
                 function: convertValueOrUnknown,
             },
             {
-                name: "ethnicity",
-                type: "stringConvert",
-                functiontype: "dataMatches",
-                tableCol: "ethnicity",
-                function: convertValueOrUnknown,
-            },
-            {
                 name: "imd_decile",
                 type: "stringConvert",
                 functiontype: "dataMatches",
