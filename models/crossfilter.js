@@ -12,8 +12,8 @@ const FilterFunctions = require("../lib/filters");
 const configurations = require("../config/cf_configurations").cfConfigurations;
 const tablename = process.env.TABLENAME || "population_health_mini";
 
-module.exports.filterCF = function (filter, callback) {
-    callback(getResults(filter), null);
+module.exports.filterCF = function (filter, excludeFilter, callback) {
+    callback(getResults(filter, excludeFilter), null);
 };
 
 module.exports.compareCF = function (filterA, filterB, callback) {
@@ -185,7 +185,7 @@ module.exports.getDataset = function () {
     return dataset;
 };
 
-const getResults = function (filter) {
+const getResults = function (filter = {}, excludeFilter = {}) {
     const results = {};
     const thisNDX = new ndx.NDX();
     thisNDX.init();
@@ -201,8 +201,9 @@ const getResults = function (filter) {
 
     for (const dimension in thisNDX.dimensions) {
         const group = thisNDX.groups[dimension];
-        if (filter[dimension]) {
+        if (filter[dimension] || excludeFilter[dimension]) {
             let filterObj = filter[dimension];
+            const excludeObj = excludeFilter[dimension];
             if (dimension === "AgeDimension" && tablename === "population_health_mini") {
                 filterObj = filter[dimension][0];
                 const lower = parseInt(filterObj.split("-")[0].trim());
@@ -215,9 +216,23 @@ const getResults = function (filter) {
                     return false;
                 });
             } else {
-                thisNDX.dimensions[dimension].filterFunction((d) => {
-                    return thisNDX.filters[dimension](d, filterObj);
-                });
+                if (filterObj && excludeObj) {
+                    thisNDX.dimensions[dimension].filterFunction((d) => {
+                        if (thisNDX.filters[dimension](d, filterObj)) {
+                            return !thisNDX.filters[dimension](d, excludeObj);
+                        } else {
+                            return false;
+                        }
+                    });
+                } else if (!filterObj && excludeObj) {
+                    thisNDX.dimensions[dimension].filterFunction((d) => {
+                        return !thisNDX.filters[dimension](d, excludeObj);
+                    });
+                } else {
+                    thisNDX.dimensions[dimension].filterFunction((d) => {
+                        return thisNDX.filters[dimension](d, filterObj);
+                    });
+                }
             }
         } else {
             thisNDX.dimensions[dimension].filter(null);

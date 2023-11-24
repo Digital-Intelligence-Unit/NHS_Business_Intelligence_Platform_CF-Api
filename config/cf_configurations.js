@@ -1,5 +1,4 @@
 // @ts-check
-
 const convertCCGtoICS = (value) => {
     switch (value) {
         case "02M":
@@ -82,6 +81,18 @@ const convertValueOrUnknownLancs12 = (dim, col) => {
             return "Yes";
         } else {
             return "No";
+        }
+    }
+};
+
+const convertValueOrUnknownType = (dim, col) => {
+    if (!dim[col]) {
+        return "Unknown";
+    } else {
+        if (dim[col].toLowerCase() === "drug related") {
+            return "Drug related";
+        } else {
+            return "Suicide";
         }
     }
 };
@@ -286,7 +297,7 @@ module.exports.cfConfigurations = [
         selectedCounts: [],
         dimensions: [
             { name: "ics", type: "stringConvert", functiontype: "dataMatches", tableCol: "ics", function: convertValueOrUnknown },
-            { name: "type", type: "stringConvert", functiontype: "dataMatches", tableCol: "type", function: convertValueOrUnknown },
+            { name: "type", type: "stringConvert", functiontype: "dataMatches", tableCol: "type", function: convertValueOrUnknownType },
             { name: "method", type: "stringConvert", functiontype: "dataMatches", tableCol: "method", function: convertValueOrUnknown },
             { name: "bcu", type: "stringConvert", functiontype: "dataMatches", tableCol: "bcu", function: convertValueOrUnknown },
             {
@@ -308,7 +319,7 @@ module.exports.cfConfigurations = [
                 name: "lancs12",
                 type: "stringConvert",
                 functiontype: "dataMatches",
-                tableCol: "lancs12",
+                tableCol: "lancs_12",
                 function: convertValueOrUnknownLancs12,
             },
             {
@@ -320,7 +331,13 @@ module.exports.cfConfigurations = [
             },
             { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
             { name: "inquest_date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "inquest_date" },
-            { name: "local_authority", type: "string", functiontype: "dataMatches", tableCol: "local_authority" },
+            {
+                name: "local_authority",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "local_authority",
+                function: convertValueOrUnknown
+            },
             { name: "residence_location", type: "location", functiontype: "postcodeMatches", tableCol: "postcode_data" },
             { name: "incident_location", type: "location", functiontype: "postcodeMatches", tableCol: "location_postcode_data" },
             { name: "gender", type: "stringConvert", functiontype: "dataMatches", tableCol: "gender", function: convertValueOrUnknown },
@@ -488,7 +505,7 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "rts_year",
                 function: convertValueOrUnknown,
-            },
+            }
         ],
     },
 ];
