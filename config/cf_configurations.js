@@ -50,6 +50,10 @@ const convertValueOrUnknownUppercase = (dim, col) => {
     return dim[col] ? capitalizeFirstLetter(dim[col]) : "Unknown";
 };
 
+const getFullWardName = (dim, col) => {
+    return dim["wardcode"] ? dim["wardcode"] + " : " + capitalizeFirstLetter(dim["wardname"]) + ", " + capitalizeFirstLetter(dim["laname"]) : "";
+};
+
 const convertSex = (dim, col) => {
     return dim[col] === "M" ? "Male" : "Female";
 };
@@ -364,13 +368,6 @@ module.exports.cfConfigurations = [
                 function: convertValueOrUnknown,
             },
             {
-                name: "ethnicity",
-                type: "stringConvert",
-                functiontype: "dataMatches",
-                tableCol: "ethnicity",
-                function: convertValueOrUnknown,
-            },
-            {
                 name: "imd_decile",
                 type: "stringConvert",
                 functiontype: "dataMatches",
@@ -512,6 +509,13 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "rts_year",
                 function: convertValueOrUnknown,
+            },
+            {
+                name: "ward",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "ward",
+                function: getFullWardName,
             }
         ],
     },
