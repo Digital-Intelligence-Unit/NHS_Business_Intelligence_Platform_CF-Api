@@ -1,5 +1,5 @@
 FROM node:14.21.3-alpine
-RUN apk add g++ make python
+RUN apk add g++ make python3
 ARG PGDATABASE
 ENV PGDATABASE ${PGDATABASE}
 ARG PGPORT=5432
