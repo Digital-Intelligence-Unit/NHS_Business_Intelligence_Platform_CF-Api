@@ -59,7 +59,7 @@
         "request": "^2.88.2",
         "simple-crypto-js": "^3.0.0",
         "speakeasy": "^2.0.0",
-        "swagger-jsdoc": "^6.0.0",
+        "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^4.1.6",
         "winston": "^3.3.3",
         "winston-aws-cloudwatch": "^3.0.0",
