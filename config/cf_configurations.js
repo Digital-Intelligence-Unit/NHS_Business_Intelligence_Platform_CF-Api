@@ -54,6 +54,10 @@ const getFullWardName = (dim, col) => {
     return dim["wardcode"] ? dim["wardcode"] + " : " + capitalizeFirstLetter(dim["wardname"]) + ", " + capitalizeFirstLetter(dim["laname"]) : "";
 };
 
+const getFullWardNameLocation = (dim, col) => {
+    return dim["location_wardcode"] ? dim["location_wardcode"] + " : " + capitalizeFirstLetter(dim["location_wardname"]) + ", " + capitalizeFirstLetter(dim["location_laname"]) : "";
+};
+
 const convertSex = (dim, col) => {
     return dim[col] === "M" ? "Male" : "Female";
 };
@@ -516,6 +520,13 @@ module.exports.cfConfigurations = [
                 functiontype: "dataMatches",
                 tableCol: "ward",
                 function: getFullWardName,
+            },
+            {
+                name: "location_ward",
+                type: "stringConvert",
+                functiontype: "dataMatches",
+                tableCol: "ward",
+                function: getFullWardNameLocation,
             }
         ],
     },
