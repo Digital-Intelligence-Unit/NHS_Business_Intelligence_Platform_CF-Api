@@ -484,7 +484,7 @@ const flattenLocation = (location, d) => {
             console.log(error);
         }
     }
-    return "";
+    return "Unknown";
 };
 
 const isEmpty = (colData) => {
