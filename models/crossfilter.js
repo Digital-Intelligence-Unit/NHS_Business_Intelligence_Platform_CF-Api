@@ -479,7 +479,10 @@ const flattenLocation = (location, d) => {
         }
         try {
             const locationData = JSON.parse(location);
-            return locationData.postcode + "|" + locationData.latitude + "|" + locationData.longitude + "|" + d.method + "|" + d.type;
+            if(locationData.postcode && locationData.latitude && locationData.longitude){
+                return locationData.postcode + "|" + locationData.latitude + "|" + locationData.longitude + "|" + d.method + "|" + d.type;
+            }
+            return "Uknown";
         } catch (error) {
             console.log(error);
         }
