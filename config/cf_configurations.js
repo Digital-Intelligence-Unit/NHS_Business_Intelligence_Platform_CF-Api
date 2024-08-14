@@ -25,7 +25,10 @@ const convertCCGtoICS = (value) => {
 };
 
 const capitalizeFirstLetter = (passedString) => {
-    return passedString[0].toUpperCase() + passedString.slice(1);
+    if(passedString && passedString.length > 0){
+        return passedString[0].toUpperCase() + passedString.slice(1);
+    }
+    return passedString;
 };
 
 const convertStringToYesNo = (dim, col) => {

@@ -10,7 +10,7 @@ let model;
 let dataset;
 const FilterFunctions = require("../lib/filters");
 const configurations = require("../config/cf_configurations").cfConfigurations;
-const tablename = process.env.TABLENAME || "population_health_mini";
+const tablename = process.env.TABLENAME || "realtime_surveillance";
 
 module.exports.filterCF = function (filter, excludeFilter, callback) {
     callback(getResults(filter, excludeFilter), null);
@@ -473,12 +473,18 @@ const convertDimToChartName = function (dimName) {
 };
 
 const flattenLocation = (location, d) => {
-    if (isEmpty(location)) {
-        return "Unknown";
-    } else {
-        const locationData = JSON.parse(location);
-        return locationData.postcode + "|" + locationData.latitude + "|" + locationData.longitude + "|" + d.method + "|" + d.type;
+    if(location){
+        if (isEmpty(location)) {
+            return "Unknown";
+        }
+        try {
+            const locationData = JSON.parse(location);
+            return locationData.postcode + "|" + locationData.latitude + "|" + locationData.longitude + "|" + d.method + "|" + d.type;
+        } catch (error) {
+            console.log(error);
+        }
     }
+    return "Unknown";
 };
 
 const isEmpty = (colData) => {
