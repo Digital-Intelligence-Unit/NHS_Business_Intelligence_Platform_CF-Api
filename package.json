@@ -52,7 +52,7 @@
         "passport": "^0.4.0",
         "passport-activedirectory": "^1.0.4",
         "passport-jwt": "~4.0.0",
-        "pg": "^8.5.1",
+        "pg": "^8.11.3",
         "pg-mapper": "0.0.1",
         "pg-types": "^3.0.1",
         "qrcode": "^1.4.4",
