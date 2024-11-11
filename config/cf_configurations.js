@@ -1,29 +1,4 @@
 // @ts-check
-const convertCCGtoICS = (value) => {
-    switch (value) {
-        case "02M":
-        case "00R":
-            return "Fylde Coast";
-        case "02G":
-            return "West Lancs";
-        case "00Q":
-        case "01A":
-            // "Blackburn with Darwen CCG" 00Q
-            // "East Lancs CCG" 01A
-            return "Pennine Lancashire";
-        case "00X":
-        case "01E":
-            // "Chorley and South Ribble CCG" 00X
-            // "Greater Preston CCG" 01E
-            return "Central Lancashire";
-        case "01K":
-            // "Lancashire North CCG" 01K
-            return "Morecambe Bay";
-        default:
-            return "Other";
-    }
-};
-
 const capitalizeFirstLetter = (passedString) => {
     if(passedString && passedString.length > 0){
         return passedString[0].toUpperCase() + passedString.slice(1);
@@ -59,10 +34,6 @@ const getFullWardName = (dim, col) => {
 
 const getFullWardNameLocation = (dim, col) => {
     return dim["location_wardcode"] ? dim["location_wardcode"] + " : " + capitalizeFirstLetter(dim["location_wardname"]) + ", " + capitalizeFirstLetter(dim["location_laname"]) : "";
-};
-
-const convertSex = (dim, col) => {
-    return dim[col] === "M" ? "Male" : "Female";
 };
 
 const convertMosType = (dim, col) => {
@@ -154,83 +125,6 @@ const convertDateAndGender = (dim, col) => {
 
 module.exports.cfConfigurations = [
     {
-        name: "covid_populations",
-        dataQuery: `SELECT ccg, age, sex, a, tc, hi, rsk, w, ls, m, d, l, gp, cr, cv, la, du, lcnt, fcnt, ltcs, flags 
-        FROM public.covid_populations;`,
-        selectedCounts: ["NoSelectedLtcs", "NoSelectedFlags"],
-        dimensions: [
-            { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
-            { name: "GPDimension", type: "string", functiontype: "dataMatches", tableCol: "gp" },
-            { name: "LTCsDimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
-            { name: "LTCs2Dimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
-            { name: "LADimension", type: "string", functiontype: "dataMatches", tableCol: "la" },
-            { name: "SexDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "sex", function: convertSex },
-            { name: "MDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "m", function: convertMosType },
-            { name: "ADimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "a", function: convertMosType },
-            { name: "CCGDimension", type: "string", functiontype: "dataMatches", tableCol: "ccg" },
-            { name: "DUDimension", type: "string", functiontype: "dataMatches", tableCol: "du" },
-            { name: "LCntDimension", type: "string", functiontype: "dataMatchesFivePlus", tableCol: "lcnt" },
-            { name: "AgeDimension", type: "string", functiontype: "dataWithinRange", tableCol: "age", groupFloor: true },
-            { name: "RskDimension", type: "string", functiontype: "dataWithinRange", tableCol: "rsk", groupFloor: true },
-            { name: "DDimension", type: "string", functiontype: "dataMatches", tableCol: "d" },
-            { name: "HIDimension", type: "string", functiontype: "dataMatches", tableCol: "hi" },
-            { name: "TCDimension", type: "string", functiontype: "dataMatches", tableCol: "tc" },
-            { name: "WDimension", type: "string", functiontype: "dataMatches", tableCol: "w" },
-            { name: "LSOADimension", type: "string", functiontype: "dataMatches", tableCol: "ls" },
-            {
-                countDim: true,
-                name: "numberSelLtc",
-                type: "string",
-                functiontype: "dataMatches",
-                tableCol: "NoSelectedLtcs",
-                fieldtoCount: "LTCs2Dimension",
-            },
-            { name: "FlagsDimension", type: "array", functiontype: "filterContains", tableCol: "flags", tableColArr: "Flags" },
-            { name: "Flags2Dimension", type: "array", functiontype: "filterContains", tableCol: "flags", tableColArr: "Flags" },
-            {
-                countDim: true,
-                name: "numberSelFlag",
-                type: "string",
-                functiontype: "dataMatches",
-                tableCol: "NoSelectedFlags",
-                fieldtoCount: "Flags2Dimension",
-            },
-            { name: "FCntDimension", type: "string", functiontype: "dataMatchesFivePlus", tableCol: "fcnt" },
-            { name: "MatrixDimension", type: "dualArray", functiontype: "matrixFilter", tableCol: "cr,cv" },
-        ],
-    },
-    {
-        name: "population_health",
-        dataQuery: "SELECT ccg, age, sex, rsk, w, t, m, d, l, gp, u, cst, lcnt, ltcs FROM public.populations;",
-        selectedCounts: ["NoSelectedLtcs"],
-        dimensions: [
-            { name: "LDimension", type: "string", functiontype: "dataMatches", tableCol: "l" },
-            { name: "GPDimension", type: "string", functiontype: "dataMatches", tableCol: "gp" },
-            { name: "TDimension", type: "string", functiontype: "dataMatches", tableCol: "t" },
-            { name: "LTCsDimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
-            { name: "LTCs2Dimension", type: "array", functiontype: "filterContains", tableCol: "ltcs", tableColArr: "LTCs" },
-            { name: "CCGDimension", type: "string", functiontype: "dataMatches", tableCol: "ccg" },
-            { name: "SexDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "sex", function: convertSex },
-            { name: "MDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "m", function: convertMosType },
-            { name: "ICPDimension", type: "stringConvert", functiontype: "dataMatches", tableCol: "ccg", function: convertCCGtoICS },
-            { name: "LCntDimension", type: "string", functiontype: "dataMatchesFivePlus", tableCol: "lcnt" },
-            { name: "AgeDimension", type: "string", functiontype: "dataWithinRange", tableCol: "age", groupFloor: true },
-            { name: "RskDimension", type: "string", functiontype: "dataWithinRange", tableCol: "rsk", groupFloor: true },
-            { name: "DDimension", type: "string", functiontype: "dataMatches", tableCol: "d" },
-            { name: "WDimension", type: "string", functiontype: "dataMatches", tableCol: "w" },
-            {
-                countDim: true,
-                name: "numberSelLtc",
-                type: "string",
-                functiontype: "dataMatches",
-                tableCol: "NoSelectedLtcs",
-                fieldtoCount: "LTCs2Dimension",
-            },
-            { name: "UDimension", type: "string", functiontype: "dataMatches", tableCol: "u" },
-            { name: "CstDimension", type: "string", functiontype: "dataMatches", tableCol: "cst" },
-        ],
-    },
-    {
         name: "population_health_mini",
         dataQuery: `with initial_table as (
             SELECT gh1.code as c1, gh1.area as a1, gh1.parent_code as pc1, gh1.parent as pa1, 
@@ -278,27 +172,6 @@ module.exports.cfConfigurations = [
                 tableCol: "lu",
                 tableColArr: "areas",
             },
-        ],
-    },
-    {
-        name: "outbreakmap",
-        dataQuery: `SELECT postcodenowhite as code, patient_sex, age_in_years as age, age_band,
-        specimen_date as date, utla, pillar, ethnicity, patient_occupation, x, y, isoids, CASE
-          WHEN linked_to_care_home = 'Y' THEN 'Linked To Care Home' ELSE 'Not Linked To Care Home'
-        END AS care_home FROM public.covid19_cases_p1p2_isoid;`,
-        selectedCounts: [],
-        dimensions: [
-            { name: "date", type: "date", functiontype: "dataWithinRangeDate", tableCol: "date" },
-            { name: "age", type: "string", functiontype: "dataWithinRange", tableCol: "age" },
-            { name: "age_band", type: "dualArray", functiontype: "agebandMatch", tableCol: "date,age_band" },
-            { name: "code", type: "string", functiontype: "dataMatches", tableCol: "code" },
-            { name: "utla", type: "string", functiontype: "dataMatches", tableCol: "utla" },
-            { name: "patient_sex", type: "string", functiontype: "dataMatches", tableCol: "patient_sex" },
-            { name: "pillar", type: "string", functiontype: "dataMatches", tableCol: "pillar" },
-            { name: "ethnicity", type: "string", functiontype: "dataMatches", tableCol: "ethnicity" },
-            { name: "patient_occupation", type: "string", functiontype: "dataMatches", tableCol: "patient_occupation" },
-            { name: "care_home", type: "string", functiontype: "dataMatches", tableCol: "care_home" },
-            { name: "isoids", type: "string", functiontype: "dataMatches", tableCol: "isoids" },
         ],
     },
     {

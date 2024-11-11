@@ -1,6 +1,6 @@
 // @ts-check
 
-const data = require("./data");
+const DataModel = require("./data");
 const crossfilter = require("crossfilter2");
 const ndx = require("./ndx");
 const groups = {};
@@ -56,7 +56,7 @@ module.exports.buildCrossfilter = function (callback) {
         return;
     }
     const thisConfig = config[0];
-    data.getAll(function (errResponse, result) {
+    DataModel.get(function (errResponse, result) {
         if (errResponse) {
             console.log("Unable to build CF: " + errResponse);
             if (callback) {
