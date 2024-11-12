@@ -42,6 +42,17 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
 
       // Default
       await import('#start/env')
+
+      // Configure crossfilter
+      const crossfilter = await import('../app/crossfilter/crossfilter.js');
+      crossfilter.instance.build().then((status) => {
+          if(status) {
+              console.log('Crossfilter model built successfully!')
+          } else {
+              console.log('An error occurred whilst building crossfilter');
+              app.terminate();
+          }
+      });
     })
     app.listen('SIGTERM', () => app.terminate())
     app.listenIf(app.managedByPm2, 'SIGINT', () => app.terminate())

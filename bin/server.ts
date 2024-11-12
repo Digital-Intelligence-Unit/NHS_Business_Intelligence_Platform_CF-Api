@@ -48,6 +48,18 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
     })
     .httpServer()
     .start()
+    .then(async (app) => {
+        // Configure crossfilter
+        const crossfilter = await import('../app/crossfilter/crossfilter.js');
+        crossfilter.instance.build().then((status) => {
+            if(status) {
+                console.log('Crossfilter model built successfully!')
+            } else {
+                console.log('An error occurred whilst building crossfilter');
+                process.exit();
+            }
+        });
+    })
     .catch((error) => {
         process.exitCode = 1
         prettyPrintError(error)

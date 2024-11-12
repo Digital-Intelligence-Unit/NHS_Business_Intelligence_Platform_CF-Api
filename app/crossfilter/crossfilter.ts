@@ -1,10 +1,10 @@
 // @ts-nocheck (temporary)
-const DataModel = require("./data");
-const Filters = require("../lib/filters");
-const Utils = require('../lib/utils');
-const crossfilter = require("crossfilter2");
+import { DataModel } from "./data.js";
+import { Filters } from "./helpers/filters.js";
+import * as Utils from "./helpers/utils.js";
+import crossfilter from 'crossfilter2'
 
-const configurations = require("../config/cf_configurations").cfConfigurations;
+import { cfConfigurations } from "./config/cf_configurations.js";
 const tablename = process.env.TABLENAME || "realtime_surveillance";
 
 export class Crossfilter {
@@ -20,9 +20,9 @@ export class Crossfilter {
         return this.model.groupAll();
     }
 
-    build(callback = null) {
+    async build() {
         // Get configuration
-        const config = configurations.filter((x) => x.name === tablename);
+        const config = cfConfigurations.filter((x) => x.name === tablename);
         if (config.length === 0) {
             console.log("Unable to configure crossfilter for " + tablename);
             return;
@@ -30,112 +30,104 @@ export class Crossfilter {
         this.config = config[0];
 
         // Get data
-        DataModel.get(tablename, (errResponse, result) => {
-            try {
-                if (errResponse) {
-                    throw new Error(errResponse);
-                }
+        const result = await DataModel.get(tablename)
+        console.log(result)
+        try {
+            this.dataset = result;
+            console.log("Data extracted from DB");
 
-                this.dataset = result;
-                console.log("Data extracted from DB");
-
-                if (this.config.selectedCounts && this.config.selectedCounts.length > 0) {
-                    this.dataset.forEach((item) => {
-                        this.config.selectedCounts.forEach((count) => {
-                            item[count] = 0;
-                        });
+            if (this.config.selectedCounts && this.config.selectedCounts.length > 0) {
+                this.dataset.forEach((item) => {
+                    this.config.selectedCounts.forEach((count) => {
+                        item[count] = 0;
                     });
-                }
-
-                console.log("Constructing CF...");
-                this.model = crossfilter(this.dataset);
-                this.model.groupAll();
-                console.log("Building Dimensions...");
-
-                this.config.dimensions.forEach((dim) => {
-                    console.log("Building Dimension: " + dim.name);
-                    let tableColSplit;
-                    switch (dim.type) {
-                        case "location":
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                return Utils.flattenLocation(d[dim.tableCol], d);
-                            });
-                            break;
-                        case "number":
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                return +d[dim.tableCol];
-                            });
-                            break;
-                        case "numberSimple":
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                if (d[dim.tableCol] === undefined || d[dim.tableCol] === null) return -1;
-                                else return d[dim.tableCol];
-                            });
-                            break;
-                        case "date_stringArray":
-                            tableColSplit = dim.tableCol.split(",");
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                try {
-                                    const date = new Date(d[tableColSplit[0]]).toISOString().substr(0, 10);
-                                    return [date, d[tableColSplit[1]]];
-                                } catch (ex) {
-                                    return [d[tableColSplit[0]], d[tableColSplit[1]]];
-                                }
-                            });
-                            break;
-                        case "date":
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                return d[dim.tableCol] !== "null" && d[dim.tableCol] && Date.parse(d[dim.tableCol])
-                                    ? new Date(d[dim.tableCol])
-                                    : new Date("1900-01-01");
-                            });
-                            break;
-                        case "array":
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                return d[dim.tableCol][dim.tableColArr || dim.tableCol];
-                            }, !dim.name.includes("2Dimension"));
-                            break;
-                        case "arraySimple":
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                return d.medication || ["Unknown"];
-                            }, true);
-                            break;
-                        case "stringConvert":
-                            this.dimensions[dim.name] = this.model.dimension((d) => dim.function(d, dim.tableCol));
-                            break;
-                        case "dualArray":
-                            tableColSplit = dim.tableCol.split(",");
-                            this.dimensions[dim.name] = this.model.dimension((d) => [d[tableColSplit[0]], d[tableColSplit[1]]]);
-                            break;
-                        default:
-                            this.dimensions[dim.name] = this.model.dimension((d) => {
-                                return d[dim.tableCol];
-                            });
-                            break;
-                    }
-                    if (dim.groupFloor) this.groups[dim.name] = this.dimensions[dim.name].group((g) => Math.floor(g));
-                    else {
-                        if (tablename === "population_health_mini") {
-                            this.groups[dim.name] = this.dimensions[dim.name].group().reduceSum((d) => {
-                                return d.num;
-                            });
-                        } else {
-                            this.groups[dim.name] = this.dimensions[dim.name].group();
-                        }
-                    }
-                    this.filters[dim.name] = Filters[dim.functiontype];
                 });
-            } catch(e) {
-                console.log(e);
-                callback(e, null);
             }
 
-            if (callback) {
-                callback(null, "Build Finished");
-            }
+            console.log("Constructing CF...");
+            this.model = crossfilter(this.dataset);
+            this.model.groupAll();
+            console.log("Building Dimensions...");
 
-            return "Build Finished";
-        });
+            this.config.dimensions.forEach((dim) => {
+                console.log("Building Dimension: " + dim.name);
+                let tableColSplit;
+                switch (dim.type) {
+                    case "location":
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            return Utils.flattenLocation(d[dim.tableCol], d);
+                        });
+                        break;
+                    case "number":
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            return +d[dim.tableCol];
+                        });
+                        break;
+                    case "numberSimple":
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            if (d[dim.tableCol] === undefined || d[dim.tableCol] === null) return -1;
+                            else return d[dim.tableCol];
+                        });
+                        break;
+                    case "date_stringArray":
+                        tableColSplit = dim.tableCol.split(",");
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            try {
+                                const date = new Date(d[tableColSplit[0]]).toISOString().substr(0, 10);
+                                return [date, d[tableColSplit[1]]];
+                            } catch (ex) {
+                                return [d[tableColSplit[0]], d[tableColSplit[1]]];
+                            }
+                        });
+                        break;
+                    case "date":
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            return d[dim.tableCol] !== "null" && d[dim.tableCol] && Date.parse(d[dim.tableCol])
+                                ? new Date(d[dim.tableCol])
+                                : new Date("1900-01-01");
+                        });
+                        break;
+                    case "array":
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            return d[dim.tableCol][dim.tableColArr || dim.tableCol];
+                        }, !dim.name.includes("2Dimension"));
+                        break;
+                    case "arraySimple":
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            return d.medication || ["Unknown"];
+                        }, true);
+                        break;
+                    case "stringConvert":
+                        this.dimensions[dim.name] = this.model.dimension((d) => dim.function(d, dim.tableCol));
+                        break;
+                    case "dualArray":
+                        tableColSplit = dim.tableCol.split(",");
+                        this.dimensions[dim.name] = this.model.dimension((d) => [d[tableColSplit[0]], d[tableColSplit[1]]]);
+                        break;
+                    default:
+                        this.dimensions[dim.name] = this.model.dimension((d) => {
+                            return d[dim.tableCol];
+                        });
+                        break;
+                }
+                if (dim.groupFloor) this.groups[dim.name] = this.dimensions[dim.name].group((g) => Math.floor(g));
+                else {
+                    if (tablename === "population_health_mini") {
+                        this.groups[dim.name] = this.dimensions[dim.name].group().reduceSum((d) => {
+                            return d.num;
+                        });
+                    } else {
+                        this.groups[dim.name] = this.dimensions[dim.name].group();
+                    }
+                }
+                this.filters[dim.name] = Filters[dim.functiontype];
+            });
+        } catch(e) {
+            console.log(e);
+            return false;
+        }
+
+        return true;
     }
 
     filter(filter, excludeFilter) {
@@ -205,7 +197,7 @@ export class Crossfilter {
         return results;
     }
 
-    compare(filterA, filterB, callback) {
+    compare(filterA, filterB) {
         const finalCompareTable = [];
         const BaselineCohortAggregatedData = JSON.parse(JSON.stringify(this.data(filterA, this.filter(filterA))));
         const ComparatorCohortAggregatedData = JSON.parse(JSON.stringify(this.data(filterB, this.filter(filterB))));
@@ -233,9 +225,12 @@ export class Crossfilter {
             }
             finalCompareTable.push({ chartname: chartName, chartdata: allChartItems });
         });
-        const baseline = BaselineCohortAggregatedData.denominator;
-        const comp = ComparatorCohortAggregatedData.denominator;
-        callback(finalCompareTable, baseline, comp, null);
+
+        return { 
+            table: finalCompareTable, 
+            baseline: BaselineCohortAggregatedData.denominator,
+            comparison: ComparatorCohortAggregatedData.denominator
+        }
     }
 
     data(filter, group) {
@@ -430,7 +425,7 @@ export class Crossfilter {
                 value.filterAll();
             }
 
-            const config = configurations.find((x) => x.name === tablename) || configurations[0];
+            const config = cfConfigurations.find((x) => x.name === tablename) || cfConfigurations[0];
             const counters = config.dimensions.filter((x) => x.countDim);
             counters.forEach((dim) => {
                 clone.dimensions[dim.name].dispose();
@@ -448,7 +443,7 @@ export class Crossfilter {
     }
 
     addCounts(filter) {
-        const config = configurations.find((x) => x.name === tablename) || configurations[0];
+        const config = cfConfigurations.find((x) => x.name === tablename) || cfConfigurations[0];
         const counters = config.dimensions.filter((x) => x.countDim);
 
         try {

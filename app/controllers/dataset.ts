@@ -5,12 +5,10 @@ import UserPolicy from 'diu-data-functions/policies/user_policy';
 
 export default class DatasetController {
     /**
-     * @index
-     * @paramQuery type - Filter by type or date - @type(string) 
-     * @paramQuery date - Filter by date - @type(string) 
-     * @paramQuery pageKey - DDB Start key - @type(string) 
-     * @paramQuery limit - Query result limit - @type(number) 
-     * @description Get a list of all logs
+     * @get
+     * @paramQuery filter - Filter by type or date - @type(string) 
+     * @paramQuery excludeFilter - Filter by date - @type(string) 
+     * @description Get crossfilter data
      * @responseBody 200 - Model
      */
     async get({ request, response, bouncer }: HttpContext) {
@@ -40,6 +38,56 @@ export default class DatasetController {
             return response.send(data);
         } else {
             return response.internalServerError({ message: 'An error occurred, please try again' })
+        }
+    }
+
+    /**
+     * @rebuild
+     * @description Rebuild crossfilter model
+     * @responseBody 200 - Model
+     */
+    async rebuild({ response }: HttpContext) {
+        // Rebuild
+        const status = await crossfilter.build();
+        if (status) {
+            return response.send({ success: true, message: 'Crossfilter rebuilt successfully!'});
+        } else {
+            return response.internalServerError({ message: 'Crossfilter rebuild failed' })
+        }
+    }
+
+    /**
+     * @compare
+     * @requestFormDataBody {"cohorta": {"type":"object"}, "cohortb": {"type":"object"}}
+     * @description Compare two cohorts (Object props: username, cohortName, data, createdDT)
+     * @responseBody 200 - Model
+     */
+    async compare({ request, response, bouncer }: HttpContext) {
+        // Check permission
+        if (
+            crossfilter.config?.capability && 
+            await bouncer.with(UserPolicy).denies('capability', crossfilter.config?.capability)
+        ) {
+            return response.forbidden({
+                status: 401,
+                message: 'You don\'t have permission to access this data'
+            })
+        }
+
+        // Get filters
+        const filters = request.all();
+        if(filters.cohorta.data && filters.cohortb.data) {
+            // Get comparison
+            const results = crossfilter.compare(
+                JSON.parse(filters.cohorta.data),
+                JSON.parse(filters.cohortb.data)
+            );
+
+            return response.send({
+                details: results.table,
+                baselinePop: results.baseline,
+                comparisonPop: results.comparison
+            });
         }
     }
 }

@@ -1,6 +1,6 @@
 // @ts-nocheck (temporary)
-const { normalise } = require("./utils");
-class Filters {
+import { normalise } from "./utils.js";
+export class Filters {
     static filterContains(items, filter) {
         let flag = false;
 
@@ -90,5 +90,3 @@ class Filters {
         return filter.includes(items);
     }
 }
-
-module.exports = Filters;

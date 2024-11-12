@@ -39,15 +39,6 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
-  | Variables for configuring the mail package
-  |----------------------------------------------------------
-  */
-  EMAIL_HOST: Env.schema.string(),
-  EMAIL_USERNAME: Env.schema.string(),
-  EMAIL_PASSWORD: Env.schema.string(),
-
-  /*
-  |----------------------------------------------------------
   | Variables for configuring the drive package
   |----------------------------------------------------------
   */

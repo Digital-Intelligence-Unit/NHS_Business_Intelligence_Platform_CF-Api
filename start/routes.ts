@@ -16,15 +16,9 @@ router
         router.get('/', '#controllers/swagger.json')
         router.get('/docs', '#controllers/swagger.docs')
     })
-    .prefix('/v2/swagger')
+    .prefix('/swagger')
 
 /*
 | Import all other routes from app/routes
 */
-import '../app/routes/user.js'
 import '../app/routes/dataset.js'
-import '../app/routes/access_logs.js'
-import '../app/routes/mail.js'
-import '../app/routes/pbi.js'
-import '../app/routes/rbac.js'
-import '../app/routes/admin.js'

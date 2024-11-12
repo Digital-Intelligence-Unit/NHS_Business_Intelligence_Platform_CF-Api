@@ -123,7 +123,7 @@ const convertDateAndGender = (dim, col) => {
     return year + " " + gender;
 };
 
-module.exports.cfConfigurations = [
+export const cfConfigurations = [
     {
         name: "population_health_mini",
         capability: null,

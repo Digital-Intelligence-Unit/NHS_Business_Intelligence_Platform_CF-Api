@@ -14,5 +14,4 @@ router
         router.get('/getCrossfilter', [DatasetController, 'get'])
         router.get('/rebuildCrossfilter', [DatasetController, 'rebuild'])
         router.get('/getComparison', [DatasetController, 'compare'])
-        .use(middleware.auth())
-    })
+    }).use(middleware.auth())
