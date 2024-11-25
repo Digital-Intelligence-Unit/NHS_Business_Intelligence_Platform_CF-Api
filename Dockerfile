@@ -1,33 +1,54 @@
-FROM node:14.21.3-alpine
-RUN apk add g++ make python3
-ARG PGDATABASE
-ENV PGDATABASE ${PGDATABASE}
-ARG PGPORT=5432
-ENV PGPORT ${PGPORT}
+FROM node:20.12.2-alpine3.18 as base
+
+# Set environment variables
 ARG AWSPROFILE
 ENV AWSPROFILE ${AWSPROFILE}
-ARG JWT_SECRET
-ENV JWT_SECRET ${JWT_SECRET}
-ARG JWT_SECRETKEY
-ENV JWT_SECRETKEY ${JWT_SECRETKEY}
-ARG POSTGRES_UN
-ENV POSTGRES_UN ${POSTGRES_UN}
-ARG POSTGRES_PW
-ENV POSTGRES_PW ${POSTGRES_PW}
 ARG AWS_SECRETID
-ENV AWS_SECRETID ${AWS_SECRETID}
+ENV AWS_ACCESS_KEY_ID ${AWS_SECRETID}
 ARG AWS_SECRETKEY
-ENV AWS_SECRETKEY ${AWS_SECRETKEY}
+ENV AWS_SECRET_ACCESS_KEY ${AWS_SECRETKEY}
+ENV AWS_REGION "eu-west-2"
+
+ARG PGDATABASE
+ENV DB_HOST ${PGDATABASE}
+ARG PGPORT
+ENV DB_PORT ${PGPORT}
+ARG POSTGRES_UN
+ENV DB_USER ${POSTGRES_UN}
+ARG POSTGRES_PW
+ENV DB_PASSWORD ${POSTGRES_PW}
+
 ARG SITE_URL
-ENV SITE_URL ${SITE_URL}
-ARG TABLENAME
-ENV TABLENAME ${TABLENAME}
-ARG API_KEY
-ENV API_KEY ${API_KEY}
-ENV API_NAME=api-cfserver, AWSREGION=eu-west-2
-WORKDIR /usr/src/app
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
-RUN npm install --production --silent && mv node_modules ../
-COPY . .
-EXPOSE 8079
-CMD npm start
+ENV DOMAIN ${SITE_URL}
+ARG APP_KEY
+ENV APP_KEY ${APP_KEY}
+ARG ENV
+ENV NODE_ENV ${ENV}
+ENV PORT 8078
+ENV HOST 0.0.0.0
+
+# Production only deps stage
+FROM base as production-deps
+WORKDIR /app
+ADD package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Build stage
+FROM base as build
+WORKDIR /app
+COPY --from=production-deps /app/node_modules /app/node_modules
+ADD . .
+RUN npm run build
+RUN npm run docs:generate
+
+# Production stage
+FROM base
+WORKDIR /app
+COPY --from=production-deps /app/node_modules /app/node_modules
+COPY --from=build /app/build /app
+COPY --from=build /app/swagger.yml /app/
+COPY --from=build /app/swagger.json /app/
+RUN mkdir /app/storage
+
+EXPOSE 8078
+CMD ["node", "./bin/server.js"]
